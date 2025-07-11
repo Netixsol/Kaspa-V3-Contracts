@@ -1,0 +1,6 @@
+{
+  "extends": "kaspa/eslint-config-kaspa",
+  "rules": {
+    "import/no-extraneous-dependencies": 0
+  }
+}
