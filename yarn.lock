@@ -1158,6 +1158,8 @@
 "@kasplex/v3-core@*", "@kasplex/v3-core@file:D:\\Ahmad\\Archive\\KaspaFInanceDex\\pancake-v3-contracts\\projects\\v3-core":
   version "1.0.2"
   resolved "file:projects/v3-core"
+  dependencies:
+    keccak "^3.0.4"
 
 "@kasplex/v3-lm-pool@*", "@kasplex/v3-lm-pool@file:D:\\Ahmad\\Archive\\KaspaFInanceDex\\pancake-v3-contracts\\projects\\v3-lm-pool":
   version "1.0.0"
@@ -8666,10 +8668,10 @@ jsprim@^1.2.2:
     array-includes "^3.1.5"
     object.assign "^4.1.3"
 
-keccak@^3.0.0, keccak@^3.0.2:
-  version "3.0.3"
-  resolved "https://registry.npmjs.org/keccak/-/keccak-3.0.3.tgz"
-  integrity sha512-JZrLIAJWuZxKbCilMpNz5Vj7Vtb4scDG3dMXLOsbzBmQGyjwE61BbW7bJkfKKCShXiQZt3T6sBgALRtmd+nZaQ==
+keccak@^3.0.0, keccak@^3.0.2, keccak@^3.0.4:
+  version "3.0.4"
+  resolved "https://registry.npmjs.org/keccak/-/keccak-3.0.4.tgz"
+  integrity sha512-3vKuW0jV8J3XNTzvfyicFR5qvxrSAGl7KIhvgOu5cmWwM7tZRj3fMbj/pfIf4be7aznbc+prBWGjywox/g2Y6Q==
   dependencies:
     node-addon-api "^2.0.0"
     node-gyp-build "^4.2.0"

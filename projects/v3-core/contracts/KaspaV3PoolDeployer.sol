@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import './interfaces/IKaspaV3PoolDeployer.sol';
 
 import './KaspaV3Pool.sol';
 
-contract KaspaV3PoolDeployer is IKaspaV3PoolDeployer {
+contract KaspaV3PoolDeployer is IKaspaV3PoolDeployer, Ownable {
     struct Parameters {
         address factory;
         address token0;
@@ -23,15 +24,13 @@ contract KaspaV3PoolDeployer is IKaspaV3PoolDeployer {
     event SetFactoryAddress(address indexed factory);
 
     modifier onlyFactory() {
-        require(msg.sender == factoryAddress, "only factory can call deploy");
+        require(msg.sender == factoryAddress, 'only factory can call deploy');
         _;
     }
 
-    function setFactoryAddress(address _factoryAddress) external {
-        require(factoryAddress == address(0), "already initialized");
-
+    function setFactoryAddress(address _factoryAddress) external onlyOwner {
+        require(factoryAddress == address(0), 'already initialized');
         factoryAddress = _factoryAddress;
-
         emit SetFactoryAddress(_factoryAddress);
     }
 

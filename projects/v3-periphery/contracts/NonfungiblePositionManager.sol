@@ -73,7 +73,7 @@ contract NonfungiblePositionManager is
         address _factory,
         address _WETH9,
         address _tokenDescriptor_
-    ) ERC721Permit('Kaspa V3 Positions NFT-V1', 'PCS-V3-POS', '1') PeripheryImmutableState(_deployer, _factory, _WETH9) {
+    ) ERC721Permit('Kaspa V3 Positions NFT-V1', 'KFC-V3-POS', '1') PeripheryImmutableState(_deployer, _factory, _WETH9) {
         _tokenDescriptor = _tokenDescriptor_;
     }
 

@@ -1,6 +1,6 @@
 # Solidity API
 
-## TestKaspaswapCallee
+## TestkaspaCallee
 
 ### swapExact0For1
 

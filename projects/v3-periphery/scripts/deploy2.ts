@@ -126,7 +126,7 @@ async function main() {
     artifacts.NonfungibleTokenPositionDescriptorOffChain.bytecode,
     owner
   )
-  const baseTokenUri = 'https://nft.kaspaswap.com/v3/'
+  const baseTokenUri = 'https://nft.kaspa.com/v3/'
   const nonfungibleTokenPositionDescriptor = await upgrades.deployProxy(NonfungibleTokenPositionDescriptor, [
     baseTokenUri,
   ])
