@@ -1,10 +1,14 @@
+yarn run v1.22.22
+$ D:\Ahmad\Archive\KaspaFInanceDex\pancake-v3-contracts\node_modules\.bin\hardhat flatten contracts/lens/QuoterV2.sol
+// Sources flattened with hardhat v2.26.0 https://hardhat.org
 
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-// Sources flattened with hardhat v2.13.0 https://hardhat.org
+pragma abicoder v2;
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolActions.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Permissionless pool actions
@@ -111,7 +115,7 @@ interface IKaspaV3PoolActions {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolDerivedState.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Pool state that is not stored
@@ -155,7 +159,7 @@ interface IKaspaV3PoolDerivedState {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolEvents.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Events emitted by a pool
@@ -289,7 +293,7 @@ interface IKaspaV3PoolEvents {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolImmutables.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Pool state that never changes
@@ -328,7 +332,7 @@ interface IKaspaV3PoolImmutables {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolOwnerActions.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Permissioned pool actions
@@ -358,7 +362,7 @@ interface IKaspaV3PoolOwnerActions {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolState.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Pool state that can change
@@ -478,7 +482,7 @@ interface IKaspaV3PoolState {
 
 // File @kasplex/v3-core/contracts/interfaces/IKaspaV3Pool.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 /// @title The interface for a Kaspa V3 Pool
 /// @notice A Kaspa pool facilitates swapping and automated market making between any two assets that strictly conform
@@ -498,7 +502,7 @@ interface IKaspaV3Pool is
 
 // File @kasplex/v3-core/contracts/libraries/BitMath.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title BitMath
@@ -596,7 +600,7 @@ library BitMath {
 
 // File @kasplex/v3-core/contracts/libraries/TickBitmap.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 /// @title Packed tick initialized state library
 /// @notice Stores a packed mapping of tick index to its initialized state
@@ -675,7 +679,7 @@ library TickBitmap {
 
 // File contracts/interfaces/IPeripheryImmutableState.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Immutable state
@@ -694,7 +698,7 @@ interface IPeripheryImmutableState {
 
 // File contracts/base/PeripheryImmutableState.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 /// @title Immutable state
 /// @notice Immutable state used by periphery contracts
@@ -716,7 +720,7 @@ abstract contract PeripheryImmutableState is IPeripheryImmutableState {
 
 // File @kasplex/v3-core/contracts/interfaces/callback/IKaspaV3SwapCallback.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Callback for IKaspaV3PoolActions#swap
@@ -741,7 +745,7 @@ interface IKaspaV3SwapCallback {
 
 // File @kasplex/v3-core/contracts/libraries/SafeCast.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Safe casting methods
@@ -773,7 +777,7 @@ library SafeCast {
 
 // File @kasplex/v3-core/contracts/libraries/TickMath.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0 <0.8.0;
 
 /// @title Math library for computing sqrt prices from ticks and vice versa
@@ -982,9 +986,9 @@ library TickMath {
 
 // File contracts/interfaces/IQuoterV2.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.5;
-pragma abicoder v2;
+// Original pragma directive: pragma abicoder v2
 
 /// @title QuoterV2 Interface
 /// @notice Supports quoting the calculated amounts from exact input or exact output swaps.
@@ -1084,7 +1088,7 @@ interface IQuoterV2 {
 
 // File contracts/libraries/PoolAddress.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Provides functions for deriving a pool address from the factory, tokens, and the fee
@@ -1136,7 +1140,7 @@ library PoolAddress {
 
 // File contracts/libraries/CallbackValidation.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 /// @notice Provides validation for callbacks from Kaspa V3 Pools
 library CallbackValidation {
@@ -1172,7 +1176,7 @@ library CallbackValidation {
 
 // File contracts/libraries/BytesLib.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 /*
  * @title Solidity Bytes Arrays Utils
  * @author Gonçalo Sá <goncalo.sa@consensys.net>
@@ -1277,7 +1281,7 @@ library BytesLib {
 
 // File contracts/libraries/Path.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.6.0;
 /// @title Functions for manipulating path data for multihop swaps
 library Path {
@@ -1347,7 +1351,7 @@ library Path {
 
 // File contracts/libraries/PoolTicksCounter.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.6.0;
 library PoolTicksCounter {
     /// @dev This function counts the number of initialized ticks that would incur a gas cost between tickBefore and tickAfter.
@@ -1444,9 +1448,9 @@ library PoolTicksCounter {
 
 // File contracts/lens/QuoterV2.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
-pragma abicoder v2;
+// Original pragma directive: pragma abicoder v2
 /// @title Provides quotes for swaps
 /// @notice Allows getting the expected amount out or amount in for a given swap without executing the swap
 /// @dev These functions are not gas efficient and should _not_ be called on chain. Instead, optimistically execute
@@ -1703,3 +1707,4 @@ contract QuoterV2 is IQuoterV2, IKaspaV3SwapCallback, PeripheryImmutableState {
         }
     }
 }
+Done in 1.65s.

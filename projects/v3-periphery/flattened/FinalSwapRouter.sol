@@ -1,4 +1,10 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-License-Identifier: GPL-2.0-or-later AND MIT
+
+pragma abicoder v2;
+
+// File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolActions.sol@v1.0.2
+
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Permissionless pool actions
@@ -105,7 +111,7 @@ interface IKaspaV3PoolActions {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolDerivedState.sol@v1.0.2
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Pool state that is not stored
@@ -149,7 +155,7 @@ interface IKaspaV3PoolDerivedState {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolEvents.sol@v1.0.2
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Events emitted by a pool
@@ -283,7 +289,7 @@ interface IKaspaV3PoolEvents {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolImmutables.sol@v1.0.2
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Pool state that never changes
@@ -322,7 +328,7 @@ interface IKaspaV3PoolImmutables {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolOwnerActions.sol@v1.0.2
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Permissioned pool actions
@@ -352,7 +358,7 @@ interface IKaspaV3PoolOwnerActions {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolState.sol@v1.0.2
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Pool state that can change
@@ -472,7 +478,7 @@ interface IKaspaV3PoolState {
 
 // File @kasplex/v3-core/contracts/interfaces/IKaspaV3Pool.sol@v1.0.2
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 /// @title The interface for a Kaspa V3 Pool
 /// @notice A Kaspa pool facilitates swapping and automated market making between any two assets that strictly conform
@@ -492,9 +498,9 @@ interface IKaspaV3Pool is
 
 // File contracts/interfaces/IMulticall.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.5;
-pragma abicoder v2;
+// Original pragma directive: pragma abicoder v2
 
 /// @title Multicall interface
 /// @notice Enables calling multiple methods in a single call to the contract
@@ -509,8 +515,9 @@ interface IMulticall {
 
 // File contracts/base/Multicall.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
+// Original pragma directive: pragma abicoder v2
 /// @title Multicall
 /// @notice Enables calling multiple methods in a single call to the contract
 abstract contract Multicall is IMulticall {
@@ -537,7 +544,7 @@ abstract contract Multicall is IMulticall {
 
 // File contracts/interfaces/IPeripheryImmutableState.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Immutable state
@@ -556,7 +563,7 @@ interface IPeripheryImmutableState {
 
 // File contracts/base/PeripheryImmutableState.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 /// @title Immutable state
 /// @notice Immutable state used by periphery contracts
@@ -578,7 +585,7 @@ abstract contract PeripheryImmutableState is IPeripheryImmutableState {
 
 // File @openzeppelin/contracts/token/ERC20/IERC20.sol@v3.4.2-solc-0.7
 
-
+// Original license: SPDX_License_Identifier: MIT
 
 pragma solidity ^0.7.0;
 
@@ -659,7 +666,7 @@ interface IERC20 {
 
 // File contracts/interfaces/external/IWETH9.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 /// @title Interface for WETH9
 interface IWETH9 is IERC20 {
@@ -673,7 +680,7 @@ interface IWETH9 is IERC20 {
 
 // File contracts/interfaces/IPeripheryPayments.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.5;
 
 /// @title Periphery Payments
@@ -706,7 +713,7 @@ interface IPeripheryPayments {
 
 // File contracts/libraries/TransferHelper.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.6.0;
 library TransferHelper {
     /// @notice Transfers tokens from the targeted address to the given destination
@@ -767,7 +774,7 @@ library TransferHelper {
 
 // File contracts/base/PeripheryPayments.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.5;
 abstract contract PeripheryPayments is IPeripheryPayments, PeripheryImmutableState {
     receive() external payable {
@@ -831,7 +838,7 @@ abstract contract PeripheryPayments is IPeripheryPayments, PeripheryImmutableSta
 
 // File @kasplex/v3-core/contracts/libraries/LowGasSafeMath.sol@v1.0.2
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.0;
 
 /// @title Optimized overflow and underflow safe math operations
@@ -881,7 +888,7 @@ library LowGasSafeMath {
 
 // File contracts/interfaces/IPeripheryPaymentsWithFee.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.5;
 /// @title Periphery Payments
 /// @notice Functions to ease deposits and withdrawals of ETH
@@ -911,7 +918,7 @@ interface IPeripheryPaymentsWithFee is IPeripheryPayments {
 
 // File contracts/base/PeripheryPaymentsWithFee.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.5;
 abstract contract PeripheryPaymentsWithFee is PeripheryPayments, IPeripheryPaymentsWithFee {
     using LowGasSafeMath for uint256;
@@ -960,7 +967,7 @@ abstract contract PeripheryPaymentsWithFee is PeripheryPayments, IPeripheryPayme
 
 // File contracts/base/BlockTimestamp.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 
 /// @title Function for getting block timestamp
@@ -976,7 +983,7 @@ abstract contract BlockTimestamp {
 
 // File contracts/base/PeripheryValidation.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 abstract contract PeripheryValidation is BlockTimestamp {
     modifier checkDeadline(uint256 deadline) {
@@ -988,7 +995,7 @@ abstract contract PeripheryValidation is BlockTimestamp {
 
 // File @openzeppelin/contracts/drafts/IERC20Permit.sol@v3.4.2-solc-0.7
 
-
+// Original license: SPDX_License_Identifier: MIT
 
 pragma solidity >=0.6.0 <0.8.0;
 
@@ -1043,7 +1050,7 @@ interface IERC20Permit {
 
 // File contracts/interfaces/external/IERC20PermitAllowed.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Interface for permit
@@ -1074,7 +1081,7 @@ interface IERC20PermitAllowed {
 
 // File contracts/interfaces/ISelfPermit.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.5;
 
 /// @title Self Permit
@@ -1154,7 +1161,7 @@ interface ISelfPermit {
 
 // File contracts/base/SelfPermit.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 /// @title Self Permit
 /// @notice Functionality to call permit on any EIP-2612-compliant token for use in the route
@@ -1214,7 +1221,7 @@ abstract contract SelfPermit is ISelfPermit {
 
 // File @kasplex/v3-core/contracts/interfaces/callback/IKaspaV3SwapCallback.sol@v1.0.2
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Callback for IKaspaV3PoolActions#swap
@@ -1239,8 +1246,9 @@ interface IKaspaV3SwapCallback {
 
 // File contracts/interfaces/ISwapRouter.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.5;
+// Original pragma directive: pragma abicoder v2
 /// @title Router token swapping functionality
 /// @notice Functions for swapping tokens via Kaspa V3
 interface ISwapRouter is IKaspaV3SwapCallback {
@@ -1306,7 +1314,7 @@ interface ISwapRouter is IKaspaV3SwapCallback {
 
 // File contracts/libraries/PoolAddress.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Provides functions for deriving a pool address from the factory, tokens, and the fee
@@ -1358,7 +1366,7 @@ library PoolAddress {
 
 // File contracts/libraries/CallbackValidation.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 /// @notice Provides validation for callbacks from Kaspa V3 Pools
 library CallbackValidation {
@@ -1394,7 +1402,7 @@ library CallbackValidation {
 
 // File contracts/libraries/BytesLib.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 /*
  * @title Solidity Bytes Arrays Utils
  * @author Gonçalo Sá <goncalo.sa@consensys.net>
@@ -1499,7 +1507,7 @@ library BytesLib {
 
 // File contracts/libraries/Path.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.6.0;
 /// @title Functions for manipulating path data for multihop swaps
 library Path {
@@ -1569,7 +1577,7 @@ library Path {
 
 // File @kasplex/v3-core/contracts/libraries/SafeCast.sol@v1.0.2
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Safe casting methods
@@ -1601,7 +1609,7 @@ library SafeCast {
 
 // File @kasplex/v3-core/contracts/libraries/TickMath.sol@v1.0.2
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0 <0.8.0;
 
 /// @title Math library for computing sqrt prices from ticks and vice versa
@@ -1810,8 +1818,9 @@ library TickMath {
 
 // File contracts/SwapRouter.sol
 
-
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
+// Original pragma directive: pragma abicoder v2
 /// @title Kaspa V3 Swap Router
 /// @notice Router for stateless execution of swaps against Kaspa V3
 contract SwapRouter is

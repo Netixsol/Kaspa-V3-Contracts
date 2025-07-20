@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-
 pragma solidity >=0.5.0;
 
 /// @title Permissionless pool actions
@@ -104,7 +103,7 @@ interface IKaspaV3PoolActions {
 }
 
 
-// File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolDerivedState.sol@v1.0.2
+// File contracts/interfaces/pool/IKaspaV3PoolDerivedState.sol
 
 pragma solidity >=0.5.0;
 
@@ -147,7 +146,7 @@ interface IKaspaV3PoolDerivedState {
 }
 
 
-// File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolEvents.sol@v1.0.2
+// File contracts/interfaces/pool/IKaspaV3PoolEvents.sol
 
 pragma solidity >=0.5.0;
 
@@ -280,7 +279,7 @@ interface IKaspaV3PoolEvents {
 }
 
 
-// File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolImmutables.sol@v1.0.2
+// File contracts/interfaces/pool/IKaspaV3PoolImmutables.sol
 
 pragma solidity >=0.5.0;
 
@@ -318,7 +317,7 @@ interface IKaspaV3PoolImmutables {
 }
 
 
-// File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolOwnerActions.sol@v1.0.2
+// File contracts/interfaces/pool/IKaspaV3PoolOwnerActions.sol
 
 pragma solidity >=0.5.0;
 
@@ -347,7 +346,7 @@ interface IKaspaV3PoolOwnerActions {
 }
 
 
-// File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolState.sol@v1.0.2
+// File contracts/interfaces/pool/IKaspaV3PoolState.sol
 
 pragma solidity >=0.5.0;
 
@@ -466,7 +465,7 @@ interface IKaspaV3PoolState {
 }
 
 
-// File @kasplex/v3-core/contracts/interfaces/IKaspaV3Pool.sol@v1.0.2
+// File contracts/interfaces/IKaspaV3Pool.sol
 
 pragma solidity >=0.5.0;
 /// @title The interface for a Kaspa V3 Pool
@@ -485,69 +484,310 @@ interface IKaspaV3Pool is
 }
 
 
-// File contracts/interfaces/ITickLens.sol
-
-pragma solidity >=0.7.5;
-pragma abicoder v2;
-
-/// @title Tick Lens
-/// @notice Provides functions for fetching chunks of tick data for a pool
-/// @dev This avoids the waterfall of fetching the tick bitmap, parsing the bitmap to know which ticks to fetch, and
-/// then sending additional multicalls to fetch the tick data
-interface ITickLens {
-    struct PopulatedTick {
-        int24 tick;
-        int128 liquidityNet;
-        uint128 liquidityGross;
-    }
-
-    /// @notice Get all the tick data for the populated ticks from a word of the tick bitmap of a pool
-    /// @param pool The address of the pool for which to fetch populated tick data
-    /// @param tickBitmapIndex The index of the word in the tick bitmap for which to parse the bitmap and
-    /// fetch all the populated ticks
-    /// @return populatedTicks An array of tick data for the given word in the tick bitmap
-    function getPopulatedTicksInWord(address pool, int16 tickBitmapIndex)
-        external
-        view
-        returns (PopulatedTick[] memory populatedTicks);
-}
-
-
-// File contracts/lens/TickLens.sol
+// File contracts/interfaces/IKaspaV3Factory.sol
 
 pragma solidity >=0.5.0;
 
-/// @title Tick Lens contract
-contract TickLens is ITickLens {
-    /// @inheritdoc ITickLens
-    function getPopulatedTicksInWord(address pool, int16 tickBitmapIndex)
-        public
+/// @title The interface for the KaspaFinance V3 Factory
+/// @notice The KaspaFinance V3 Factory facilitates creation of KaspaFinance V3 pools and control over the protocol fees
+interface IKaspaV3Factory {
+    struct TickSpacingExtraInfo {
+        bool whitelistRequested;
+        bool enabled;
+    }
+
+    /// @notice Emitted when the owner of the factory is changed
+    /// @param oldOwner The owner before the owner was changed
+    /// @param newOwner The owner after the owner was changed
+    event OwnerChanged(address indexed oldOwner, address indexed newOwner);
+
+    /// @notice Emitted when a pool is created
+    /// @param token0 The first token of the pool by address sort order
+    /// @param token1 The second token of the pool by address sort order
+    /// @param fee The fee collected upon every swap in the pool, denominated in hundredths of a bip
+    /// @param tickSpacing The minimum number of ticks between initialized ticks
+    /// @param pool The address of the created pool
+    event PoolCreated(
+        address indexed token0,
+        address indexed token1,
+        uint24 indexed fee,
+        int24 tickSpacing,
+        address pool
+    );
+
+    /// @notice Emitted when a new fee amount is enabled for pool creation via the factory
+    /// @param fee The enabled fee, denominated in hundredths of a bip
+    /// @param tickSpacing The minimum number of ticks between initialized ticks for pools created with the given fee
+    event FeeAmountEnabled(uint24 indexed fee, int24 indexed tickSpacing);
+
+    event FeeAmountExtraInfoUpdated(uint24 indexed fee, bool whitelistRequested, bool enabled);
+
+    event WhiteListAdded(address indexed user, bool verified);
+
+    /// @notice Emitted when LM pool deployer is set
+    event SetLmPoolDeployer(address indexed lmPoolDeployer);
+
+    /// @notice Returns the current owner of the factory
+    /// @dev Can be changed by the current owner via setOwner
+    /// @return The address of the factory owner
+    function owner() external view returns (address);
+
+    /// @notice Returns the tick spacing for a given fee amount, if enabled, or 0 if not enabled
+    /// @dev A fee amount can never be removed, so this value should be hard coded or cached in the calling context
+    /// @param fee The enabled fee, denominated in hundredths of a bip. Returns 0 in case of unenabled fee
+    /// @return The tick spacing
+    function feeAmountTickSpacing(uint24 fee) external view returns (int24);
+
+    /// @notice Returns the tick spacing extra info
+    /// @dev A fee amount can never be removed, so this value should be hard coded or cached in the calling context
+    /// @param fee The enabled fee, denominated in hundredths of a bip. Returns 0 in case of unenabled fee
+    /// @return whitelistRequested The flag whether should be created by white list users only
+    function feeAmountTickSpacingExtraInfo(uint24 fee) external view returns (bool whitelistRequested, bool enabled);
+
+    /// @notice Returns the pool address for a given pair of tokens and a fee, or address 0 if it does not exist
+    /// @dev tokenA and tokenB may be passed in either token0/token1 or token1/token0 order
+    /// @param tokenA The contract address of either token0 or token1
+    /// @param tokenB The contract address of the other token
+    /// @param fee The fee collected upon every swap in the pool, denominated in hundredths of a bip
+    /// @return pool The pool address
+    function getPool(
+        address tokenA,
+        address tokenB,
+        uint24 fee
+    ) external view returns (address pool);
+
+    /// @notice Creates a pool for the given two tokens and fee
+    /// @param tokenA One of the two tokens in the desired pool
+    /// @param tokenB The other of the two tokens in the desired pool
+    /// @param fee The desired fee for the pool
+    /// @dev tokenA and tokenB may be passed in either order: token0/token1 or token1/token0. tickSpacing is retrieved
+    /// from the fee. The call will revert if the pool already exists, the fee is invalid, or the token arguments
+    /// are invalid.
+    /// @return pool The address of the newly created pool
+    function createPool(
+        address tokenA,
+        address tokenB,
+        uint24 fee
+    ) external returns (address pool);
+
+    /// @notice Updates the owner of the factory
+    /// @dev Must be called by the current owner
+    /// @param _owner The new owner of the factory
+    function setOwner(address _owner) external;
+
+    /// @notice Enables a fee amount with the given tickSpacing
+    /// @dev Fee amounts may never be removed once enabled
+    /// @param fee The fee amount to enable, denominated in hundredths of a bip (i.e. 1e-6)
+    /// @param tickSpacing The spacing between ticks to be enforced for all pools created with the given fee amount
+    function enableFeeAmount(uint24 fee, int24 tickSpacing) external;
+
+    /// @notice Set an address into white list
+    /// @dev Address can be updated by owner with boolean value false
+    /// @param user The user address that add into white list
+    function setWhiteListAddress(address user, bool verified) external;
+
+    /// @notice Set a fee amount extra info
+    /// @dev Fee amounts can be updated by owner with extra info
+    /// @param whitelistRequested The flag whether should be created by owner only
+    /// @param enabled The flag is the fee is enabled or not
+    function setFeeAmountExtraInfo(
+        uint24 fee,
+        bool whitelistRequested,
+        bool enabled
+    ) external;
+
+    function setLmPoolDeployer(address _lmPoolDeployer) external;
+
+    function setFeeProtocol(address pool, uint32 feeProtocol0, uint32 feeProtocol1) external;
+
+    function collectProtocol(
+        address pool,
+        address recipient,
+        uint128 amount0Requested,
+        uint128 amount1Requested
+    ) external returns (uint128 amount0, uint128 amount1);
+
+    function setLmPool(address pool, address lmPool) external;
+}
+
+
+// File contracts/interfaces/IKaspaV3PoolDeployer.sol
+
+pragma solidity >=0.5.0;
+
+/// @title An interface for a contract that is capable of deploying Kaspa V3 Pools
+/// @notice A contract that constructs a pool must implement this to pass arguments to the pool
+/// @dev This is used to avoid having constructor arguments in the pool contract, which results in the init code hash
+/// of the pool being constant allowing the CREATE2 address of the pool to be cheaply computed on-chain
+interface IKaspaV3PoolDeployer {
+    /// @notice Get the parameters to be used in constructing the pool, set transiently during pool creation.
+    /// @dev Called by the pool constructor to fetch the parameters of the pool
+    /// Returns factory The factory address
+    /// Returns token0 The first token of the pool by address sort order
+    /// Returns token1 The second token of the pool by address sort order
+    /// Returns fee The fee collected upon every swap in the pool, denominated in hundredths of a bip
+    /// Returns tickSpacing The minimum number of ticks between initialized ticks
+    function parameters()
+        external
         view
-        override
-        returns (PopulatedTick[] memory populatedTicks)
-    {
-        // fetch bitmap
-        uint256 bitmap = IKaspaV3Pool(pool).tickBitmap(tickBitmapIndex);
+        returns (
+            address factory,
+            address token0,
+            address token1,
+            uint24 fee,
+            int24 tickSpacing
+        );
 
-        // calculate the number of populated ticks
-        uint256 numberOfPopulatedTicks;
-        for (uint256 i = 0; i < 256; i++) {
-            if (bitmap & (1 << i) > 0) numberOfPopulatedTicks++;
-        }
+    function deploy(
+        address factory,
+        address token0,
+        address token1,
+        uint24 fee,
+        int24 tickSpacing
+    ) external returns (address pool);
+}
 
-        // fetch populated tick data
-        int24 tickSpacing = IKaspaV3Pool(pool).tickSpacing();
-        populatedTicks = new PopulatedTick[](numberOfPopulatedTicks);
-        for (uint256 i = 0; i < 256; i++) {
-            if (bitmap & (1 << i) > 0) {
-                int24 populatedTick = ((int24(tickBitmapIndex) << 8) + int24(i)) * tickSpacing;
-                (uint128 liquidityGross, int128 liquidityNet, , , , , , ) = IKaspaV3Pool(pool).ticks(populatedTick);
-                populatedTicks[--numberOfPopulatedTicks] = PopulatedTick({
-                    tick: populatedTick,
-                    liquidityNet: liquidityNet,
-                    liquidityGross: liquidityGross
-                });
-            }
+
+// File contracts/KaspaV3Factory.sol
+
+pragma solidity =0.7.6;
+/// @title Canonical Kaspa V3 factory
+/// @notice Deploys Kaspa V3 pools and manages ownership and control over pool protocol fees
+contract KaspaV3Factory is IKaspaV3Factory {
+    /// @inheritdoc IKaspaV3Factory
+    address public override owner;
+
+    address public immutable poolDeployer;
+
+    /// @inheritdoc IKaspaV3Factory
+    mapping(uint24 => int24) public override feeAmountTickSpacing;
+    /// @inheritdoc IKaspaV3Factory
+    mapping(address => mapping(address => mapping(uint24 => address))) public override getPool;
+    /// @inheritdoc IKaspaV3Factory
+    mapping(uint24 => TickSpacingExtraInfo) public override feeAmountTickSpacingExtraInfo;
+    mapping(address => bool) private _whiteListAddresses;
+
+    address public lmPoolDeployer;
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;
+    }
+
+    modifier onlyOwnerOrLmPoolDeployer() {
+        require(msg.sender == owner || msg.sender == lmPoolDeployer, "Not owner or LM pool deployer");
+        _;
+    }
+
+    constructor(address _poolDeployer) {
+        poolDeployer = _poolDeployer;
+        owner = msg.sender;
+        emit OwnerChanged(address(0), msg.sender);
+
+        feeAmountTickSpacing[100] = 1;
+        feeAmountTickSpacingExtraInfo[100] = TickSpacingExtraInfo({whitelistRequested: false, enabled: true});
+        emit FeeAmountEnabled(100, 1);
+        emit FeeAmountExtraInfoUpdated(100, false, true);
+        feeAmountTickSpacing[500] = 10;
+        feeAmountTickSpacingExtraInfo[500] = TickSpacingExtraInfo({whitelistRequested: false, enabled: true});
+        emit FeeAmountEnabled(500, 10);
+        emit FeeAmountExtraInfoUpdated(500, false, true);
+        feeAmountTickSpacing[2500] = 50;
+        feeAmountTickSpacingExtraInfo[2500] = TickSpacingExtraInfo({whitelistRequested: false, enabled: true});
+        emit FeeAmountEnabled(2500, 50);
+        emit FeeAmountExtraInfoUpdated(2500, false, true);
+        feeAmountTickSpacing[10000] = 200;
+        feeAmountTickSpacingExtraInfo[10000] = TickSpacingExtraInfo({whitelistRequested: false, enabled: true});
+        emit FeeAmountEnabled(10000, 200);
+        emit FeeAmountExtraInfoUpdated(10000, false, true);
+    }
+
+    /// @inheritdoc IKaspaV3Factory
+    function createPool(
+        address tokenA,
+        address tokenB,
+        uint24 fee
+    ) external override returns (address pool) {
+        require(tokenA != tokenB);
+        (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
+        require(token0 != address(0));
+        int24 tickSpacing = feeAmountTickSpacing[fee];
+        TickSpacingExtraInfo memory info = feeAmountTickSpacingExtraInfo[fee];
+        require(tickSpacing != 0 && info.enabled, "fee is not available yet");
+        if (info.whitelistRequested) {
+            require(_whiteListAddresses[msg.sender], "user should be in the white list for this fee tier");
         }
+        require(getPool[token0][token1][fee] == address(0));
+        pool = IKaspaV3PoolDeployer(poolDeployer).deploy(address(this), token0, token1, fee, tickSpacing);
+        getPool[token0][token1][fee] = pool;
+        // populate mapping in the reverse direction, deliberate choice to avoid the cost of comparing addresses
+        getPool[token1][token0][fee] = pool;
+        emit PoolCreated(token0, token1, fee, tickSpacing, pool);
+    }
+
+    /// @inheritdoc IKaspaV3Factory
+    function setOwner(address _owner) external override onlyOwner {
+        emit OwnerChanged(owner, _owner);
+        owner = _owner;
+    }
+
+    /// @inheritdoc IKaspaV3Factory
+    function enableFeeAmount(uint24 fee, int24 tickSpacing) public override onlyOwner {
+        require(fee < 1000000);
+        // tick spacing is capped at 16384 to prevent the situation where tickSpacing is so large that
+        // TickBitmap#nextInitializedTickWithinOneWord overflows int24 container from a valid tick
+        // 16384 ticks represents a >5x price change with ticks of 1 bips
+        require(tickSpacing > 0 && tickSpacing < 16384);
+        require(feeAmountTickSpacing[fee] == 0);
+
+        feeAmountTickSpacing[fee] = tickSpacing;
+        feeAmountTickSpacingExtraInfo[fee] = TickSpacingExtraInfo({whitelistRequested: false, enabled: true});
+        emit FeeAmountEnabled(fee, tickSpacing);
+        emit FeeAmountExtraInfoUpdated(fee, false, true);
+    }
+
+    /// @inheritdoc IKaspaV3Factory
+    function setWhiteListAddress(address user, bool verified) public override onlyOwner {
+        require(_whiteListAddresses[user] != verified, "state not change");
+        _whiteListAddresses[user] = verified;
+
+        emit WhiteListAdded(user, verified);
+    }
+
+    /// @inheritdoc IKaspaV3Factory
+    function setFeeAmountExtraInfo(
+        uint24 fee,
+        bool whitelistRequested,
+        bool enabled
+    ) public override onlyOwner {
+        require(feeAmountTickSpacing[fee] != 0);
+
+        feeAmountTickSpacingExtraInfo[fee] = TickSpacingExtraInfo({
+            whitelistRequested: whitelistRequested,
+            enabled: enabled
+        });
+        emit FeeAmountExtraInfoUpdated(fee, whitelistRequested, enabled);
+    }
+
+    function setLmPoolDeployer(address _lmPoolDeployer) external override onlyOwner {
+        lmPoolDeployer = _lmPoolDeployer;
+        emit SetLmPoolDeployer(_lmPoolDeployer);
+    }
+
+    function setFeeProtocol(address pool, uint32 feeProtocol0, uint32 feeProtocol1) external override onlyOwner {
+        IKaspaV3Pool(pool).setFeeProtocol(feeProtocol0, feeProtocol1);
+    }
+
+    function collectProtocol(
+        address pool,
+        address recipient,
+        uint128 amount0Requested,
+        uint128 amount1Requested
+    ) external override onlyOwner returns (uint128 amount0, uint128 amount1) {
+        return IKaspaV3Pool(pool).collectProtocol(recipient, amount0Requested, amount1Requested);
+    }
+
+    function setLmPool(address pool, address lmPool) external override onlyOwnerOrLmPoolDeployer {
+        IKaspaV3Pool(pool).setLmPool(lmPool);
     }
 }

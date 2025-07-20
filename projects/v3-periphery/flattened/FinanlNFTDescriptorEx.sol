@@ -1,8 +1,10 @@
-// Sources flattened with hardhat v2.13.0 https://hardhat.org
+// SPDX-License-Identifier: GPL-2.0-or-later AND MIT
+
+pragma abicoder v2;
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolActions.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Permissionless pool actions
@@ -109,7 +111,7 @@ interface IKaspaV3PoolActions {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolDerivedState.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Pool state that is not stored
@@ -153,7 +155,7 @@ interface IKaspaV3PoolDerivedState {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolEvents.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Events emitted by a pool
@@ -287,7 +289,7 @@ interface IKaspaV3PoolEvents {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolImmutables.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Pool state that never changes
@@ -326,7 +328,7 @@ interface IKaspaV3PoolImmutables {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolOwnerActions.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Permissioned pool actions
@@ -356,7 +358,7 @@ interface IKaspaV3PoolOwnerActions {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolState.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Pool state that can change
@@ -476,7 +478,7 @@ interface IKaspaV3PoolState {
 
 // File @kasplex/v3-core/contracts/interfaces/IKaspaV3Pool.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 /// @title The interface for a Kaspa V3 Pool
 /// @notice A Kaspa pool facilitates swapping and automated market making between any two assets that strictly conform
@@ -496,7 +498,7 @@ interface IKaspaV3Pool is
 
 // File @kasplex/v3-core/contracts/libraries/BitMath.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title BitMath
@@ -594,7 +596,7 @@ library BitMath {
 
 // File @openzeppelin/contracts/utils/Strings.sol@v3.4.2-solc-0.7
 
-// SPDX-License-Identifier: MIT
+// Original license: SPDX_License_Identifier: MIT
 
 pragma solidity ^0.7.0;
 
@@ -632,7 +634,7 @@ library Strings {
 
 // File base64-sol/base64.sol@v1.0.1
 
-// SPDX-License-Identifier: MIT
+// Original license: SPDX_License_Identifier: MIT
 
 /// @title Base64
 /// @author Brecht Devos - <brecht@loopring.org>
@@ -698,7 +700,7 @@ library Base64 {
 
 // File contracts/libraries/NFTSVG.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.6;
 /// @title NFTSVG
 /// @notice Provides a function for generating an SVG associated with a Kaspa NFT
@@ -1103,7 +1105,7 @@ library NFTSVG {
 
 // File @kasplex/v3-core/contracts/libraries/FullMath.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.4.0 <0.8.0;
 
 /// @title Contains 512-bit math functions
@@ -1231,7 +1233,7 @@ library FullMath {
 
 // File @kasplex/v3-core/contracts/libraries/TickMath.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0 <0.8.0;
 
 /// @title Math library for computing sqrt prices from ticks and vice versa
@@ -1440,7 +1442,7 @@ library TickMath {
 
 // File @openzeppelin/contracts/math/SafeMath.sol@v3.4.2-solc-0.7
 
-// SPDX-License-Identifier: MIT
+// Original license: SPDX_License_Identifier: MIT
 
 pragma solidity ^0.7.0;
 
@@ -1658,7 +1660,7 @@ library SafeMath {
 
 // File @openzeppelin/contracts/math/SignedSafeMath.sol@v3.4.2-solc-0.7
 
-// SPDX-License-Identifier: MIT
+// Original license: SPDX_License_Identifier: MIT
 
 pragma solidity ^0.7.0;
 
@@ -1754,7 +1756,7 @@ library SignedSafeMath {
 
 // File contracts/libraries/HexStrings.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 
 library HexStrings {
@@ -1787,9 +1789,9 @@ library HexStrings {
 
 // File contracts/NFTDescriptorEx.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.0;
-pragma abicoder v2;
+// Original pragma directive: pragma abicoder v2
 contract NFTDescriptorEx {
     using TickMath for int24;
     using Strings for uint256;
@@ -2289,3 +2291,4 @@ contract NFTDescriptorEx {
         emit ToggleSwitchAndUpdateNFTDomain(msg.sender, _switchToHttpLink, _NFTDomain);
     }
 }
+

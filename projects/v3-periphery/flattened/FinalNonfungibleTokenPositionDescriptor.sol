@@ -1,8 +1,14 @@
-// Sources flattened with hardhat v2.13.0 https://hardhat.org
+yarn run v1.22.22
+$ D:\Ahmad\Archive\KaspaFInanceDex\pancake-v3-contracts\node_modules\.bin\hardhat flatten contracts/NonfungibleTokenPositionDescriptor.sol
+// Sources flattened with hardhat v2.26.0 https://hardhat.org
+
+// SPDX-License-Identifier: GPL-2.0-or-later AND GPL-3.0-or-later AND MIT
+
+pragma abicoder v2;
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolActions.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Permissionless pool actions
@@ -109,7 +115,7 @@ interface IKaspaV3PoolActions {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolDerivedState.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Pool state that is not stored
@@ -153,7 +159,7 @@ interface IKaspaV3PoolDerivedState {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolEvents.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Events emitted by a pool
@@ -287,7 +293,7 @@ interface IKaspaV3PoolEvents {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolImmutables.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Pool state that never changes
@@ -326,7 +332,7 @@ interface IKaspaV3PoolImmutables {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolOwnerActions.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Permissioned pool actions
@@ -356,7 +362,7 @@ interface IKaspaV3PoolOwnerActions {
 
 // File @kasplex/v3-core/contracts/interfaces/pool/IKaspaV3PoolState.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Pool state that can change
@@ -476,7 +482,7 @@ interface IKaspaV3PoolState {
 
 // File @kasplex/v3-core/contracts/interfaces/IKaspaV3Pool.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 /// @title The interface for a Kaspa V3 Pool
 /// @notice A Kaspa pool facilitates swapping and automated market making between any two assets that strictly conform
@@ -496,7 +502,7 @@ interface IKaspaV3Pool is
 
 // File @openzeppelin/contracts/introspection/IERC165.sol@v3.4.2-solc-0.7
 
-// SPDX-License-Identifier: MIT
+// Original license: SPDX_License_Identifier: MIT
 
 pragma solidity ^0.7.0;
 
@@ -524,7 +530,7 @@ interface IERC165 {
 
 // File @openzeppelin/contracts/token/ERC721/IERC721.sol@v3.4.2-solc-0.7
 
-// SPDX-License-Identifier: MIT
+// Original license: SPDX_License_Identifier: MIT
 
 pragma solidity ^0.7.0;
 
@@ -655,7 +661,7 @@ interface IERC721 is IERC165 {
 
 // File @openzeppelin/contracts/token/ERC721/IERC721Enumerable.sol@v3.4.2-solc-0.7
 
-// SPDX-License-Identifier: MIT
+// Original license: SPDX_License_Identifier: MIT
 
 pragma solidity ^0.7.0;
 
@@ -686,7 +692,7 @@ interface IERC721Enumerable is IERC721 {
 
 // File @openzeppelin/contracts/token/ERC721/IERC721Metadata.sol@v3.4.2-solc-0.7
 
-// SPDX-License-Identifier: MIT
+// Original license: SPDX_License_Identifier: MIT
 
 pragma solidity ^0.7.0;
 
@@ -715,7 +721,7 @@ interface IERC721Metadata is IERC721 {
 
 // File @uniswap/lib/contracts/libraries/AddressStringUtil.sol@v4.0.1-alpha
 
-// SPDX-License-Identifier: GPL-3.0-or-later
+// Original license: SPDX_License_Identifier: GPL-3.0-or-later
 
 pragma solidity >=0.5.0;
 
@@ -754,7 +760,7 @@ library AddressStringUtil {
 
 // File @uniswap/lib/contracts/libraries/SafeERC20Namer.sol@v4.0.1-alpha
 
-// SPDX-License-Identifier: GPL-3.0-or-later
+// Original license: SPDX_License_Identifier: GPL-3.0-or-later
 
 pragma solidity >=0.5.0;
 
@@ -850,7 +856,7 @@ library SafeERC20Namer {
 
 // File @openzeppelin/contracts/token/ERC20/IERC20.sol@v3.4.2-solc-0.7
 
-// SPDX-License-Identifier: MIT
+// Original license: SPDX_License_Identifier: MIT
 
 pragma solidity ^0.7.0;
 
@@ -931,7 +937,7 @@ interface IERC20 {
 
 // File contracts/interfaces/IERC20Metadata.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity ^0.7.0;
 /// @title IERC20Metadata
 /// @title Interface for ERC20 Metadata
@@ -950,7 +956,7 @@ interface IERC20Metadata is IERC20 {
 
 // File contracts/interfaces/IERC721Permit.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.5;
 /// @title ERC721 with permit
 /// @notice Extension to ERC721 that includes a permit function for signature based approvals
@@ -983,7 +989,7 @@ interface IERC721Permit is IERC721 {
 
 // File contracts/interfaces/IPeripheryImmutableState.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Immutable state
@@ -1002,7 +1008,7 @@ interface IPeripheryImmutableState {
 
 // File contracts/interfaces/IPeripheryPayments.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.5;
 
 /// @title Periphery Payments
@@ -1035,9 +1041,9 @@ interface IPeripheryPayments {
 
 // File contracts/interfaces/IPoolInitializer.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.5;
-pragma abicoder v2;
+// Original pragma directive: pragma abicoder v2
 
 /// @title Creates and initializes V3 Pools
 /// @notice Provides a method for creating and initializing a pool, if necessary, for bundling with other methods that
@@ -1061,7 +1067,7 @@ interface IPoolInitializer {
 
 // File contracts/libraries/PoolAddress.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title Provides functions for deriving a pool address from the factory, tokens, and the fee
@@ -1113,9 +1119,9 @@ library PoolAddress {
 
 // File contracts/interfaces/INonfungiblePositionManager.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.5;
-pragma abicoder v2;
+// Original pragma directive: pragma abicoder v2
 /// @title Non-fungible token for positions
 /// @notice Wraps Kaspa V3 positions in a non-fungible token interface which allows for them to be transferred
 /// and authorized.
@@ -1287,7 +1293,7 @@ interface INonfungiblePositionManager is
 
 // File contracts/interfaces/INonfungibleTokenPositionDescriptor.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 /// @title Describes position NFT tokens via URI
 interface INonfungibleTokenPositionDescriptor {
@@ -1305,7 +1311,7 @@ interface INonfungibleTokenPositionDescriptor {
 
 // File @kasplex/v3-core/contracts/libraries/BitMath.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
 /// @title BitMath
@@ -1403,7 +1409,7 @@ library BitMath {
 
 // File @kasplex/v3-core/contracts/libraries/FullMath.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.4.0 <0.8.0;
 
 /// @title Contains 512-bit math functions
@@ -1531,7 +1537,7 @@ library FullMath {
 
 // File @kasplex/v3-core/contracts/libraries/TickMath.sol@v1.0.2
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0 <0.8.0;
 
 /// @title Math library for computing sqrt prices from ticks and vice versa
@@ -1740,7 +1746,7 @@ library TickMath {
 
 // File @openzeppelin/contracts/math/SafeMath.sol@v3.4.2-solc-0.7
 
-// SPDX-License-Identifier: MIT
+// Original license: SPDX_License_Identifier: MIT
 
 pragma solidity ^0.7.0;
 
@@ -1958,7 +1964,7 @@ library SafeMath {
 
 // File @openzeppelin/contracts/math/SignedSafeMath.sol@v3.4.2-solc-0.7
 
-// SPDX-License-Identifier: MIT
+// Original license: SPDX_License_Identifier: MIT
 
 pragma solidity ^0.7.0;
 
@@ -2054,7 +2060,7 @@ library SignedSafeMath {
 
 // File @openzeppelin/contracts/utils/Strings.sol@v3.4.2-solc-0.7
 
-// SPDX-License-Identifier: MIT
+// Original license: SPDX_License_Identifier: MIT
 
 pragma solidity ^0.7.0;
 
@@ -2092,7 +2098,7 @@ library Strings {
 
 // File base64-sol/base64.sol@v1.0.1
 
-// SPDX-License-Identifier: MIT
+// Original license: SPDX_License_Identifier: MIT
 
 /// @title Base64
 /// @author Brecht Devos - <brecht@loopring.org>
@@ -2158,7 +2164,7 @@ library Base64 {
 
 // File contracts/libraries/HexStrings.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 
 library HexStrings {
@@ -2191,7 +2197,7 @@ library HexStrings {
 
 // File contracts/libraries/NFTSVG.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.6;
 /// @title NFTSVG
 /// @notice Provides a function for generating an SVG associated with a Kaspa NFT
@@ -2596,9 +2602,9 @@ library NFTSVG {
 
 // File contracts/libraries/NFTDescriptor.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.0;
-pragma abicoder v2;
+// Original pragma directive: pragma abicoder v2
 library NFTDescriptor {
     using TickMath for int24;
     using Strings for uint256;
@@ -3065,9 +3071,9 @@ library NFTDescriptor {
 
 // File contracts/NFTDescriptorEx.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.0;
-pragma abicoder v2;
+// Original pragma directive: pragma abicoder v2
 contract NFTDescriptorEx {
     using TickMath for int24;
     using Strings for uint256;
@@ -3571,7 +3577,7 @@ contract NFTDescriptorEx {
 
 // File contracts/libraries/ChainId.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity >=0.7.0;
 
 /// @title Function for getting the current chain ID
@@ -3588,7 +3594,7 @@ library ChainId {
 
 // File contracts/libraries/TokenRatioSortOrder.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 
 library TokenRatioSortOrder {
@@ -3604,9 +3610,9 @@ library TokenRatioSortOrder {
 
 // File contracts/NonfungibleTokenPositionDescriptor.sol
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// Original license: SPDX_License_Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
-pragma abicoder v2;
+// Original pragma directive: pragma abicoder v2
 /// @title Describes NFT token positions
 /// @notice Produces a string containing the data URI for a JSON metadata string
 contract NonfungibleTokenPositionDescriptor is INonfungibleTokenPositionDescriptor {
@@ -3720,3 +3726,4 @@ contract NonfungibleTokenPositionDescriptor is INonfungibleTokenPositionDescript
         return 0;
     }
 }
+Done in 1.58s.
