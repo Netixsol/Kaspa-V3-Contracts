@@ -14,7 +14,7 @@ function factoryV2() external view returns (address)
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | address | Returns the address of the Kaspa V2 factory |
+| [0] | address | Returns the address of the Kaspa Finance V2 factory |
 
 ### positionManager
 
@@ -26,5 +26,5 @@ function positionManager() external view returns (address)
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | address | Returns the address of Kaspa V3 NFT position manager |
+| [0] | address | Returns the address of Kaspa Finance V3 NFT position manager |
 

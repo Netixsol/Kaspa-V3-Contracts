@@ -2,7 +2,7 @@
 
 ## ISwapRouter
 
-Functions for swapping tokens via Kaspa V3
+Functions for swapping tokens via Kaspa Finance V3
 
 ### ExactInputSingleParams
 

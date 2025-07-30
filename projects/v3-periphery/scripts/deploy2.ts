@@ -64,13 +64,13 @@ async function main() {
 
   const deployedContracts = await import(`@kasplex/v3-core/deployments/${networkName}.json`)
 
-  const KaspaV3PoolDeployer_address = deployedContracts.KaspaV3PoolDeployer
-  const kaspaV3Factory_address = deployedContracts.KaspaV3Factory
+  const kaspaV3PoolDeployer_address = deployedContracts.KaspaV3PoolDeployer
+  const KaspaV3Factory_address = deployedContracts.KaspaV3Factory
 
   const SwapRouter = new ContractFactory(artifacts.SwapRouter.abi, artifacts.SwapRouter.bytecode, owner)
-  const swapRouter = await SwapRouter.deploy(KaspaV3PoolDeployer_address, kaspaV3Factory_address, config.WNATIVE)
+  const swapRouter = await SwapRouter.deploy(kaspaV3PoolDeployer_address, KaspaV3Factory_address, config.WNATIVE)
 
-  // await tryVerify(swapRouter, [KaspaV3PoolDeployer_address, kaspaV3Factory_address, config.WNATIVE])
+  // await tryVerify(swapRouter, [kaspaV3PoolDeployer_address, KaspaV3Factory_address, config.WNATIVE])
   console.log('swapRouter', swapRouter.address)
 
   // const NFTDescriptor = new ContractFactory(artifacts.NFTDescriptor.abi, artifacts.NFTDescriptor.bytecode, owner)
@@ -126,7 +126,7 @@ async function main() {
     artifacts.NonfungibleTokenPositionDescriptorOffChain.bytecode,
     owner
   )
-  const baseTokenUri = 'https://nft.kaspa.com/v3/'
+  const baseTokenUri = 'https://nft.kaspafinance.com/v3/'
   const nonfungibleTokenPositionDescriptor = await upgrades.deployProxy(NonfungibleTokenPositionDescriptor, [
     baseTokenUri,
   ])
@@ -141,15 +141,15 @@ async function main() {
     owner
   )
   const nonfungiblePositionManager = await NonfungiblePositionManager.deploy(
-    KaspaV3PoolDeployer_address,
-    kaspaV3Factory_address,
+    kaspaV3PoolDeployer_address,
+    KaspaV3Factory_address,
     config.WNATIVE,
     nonfungibleTokenPositionDescriptor.address
   )
 
   // await tryVerify(nonfungiblePositionManager, [
-  //   KaspaV3PoolDeployer_address,
-  //   kaspaV3Factory_address,
+  //   kaspaV3PoolDeployer_address,
+  //   KaspaV3Factory_address,
   //   config.WNATIVE,
   //   nonfungibleTokenPositionDescriptor.address,
   // ])
@@ -161,23 +161,23 @@ async function main() {
     owner
   )
 
-  const kaspaInterfaceMulticall = await KaspaInterfaceMulticall.deploy()
-  console.log('KaspaInterfaceMulticall', kaspaInterfaceMulticall.address)
+  const pancakeInterfaceMulticall = await KaspaInterfaceMulticall.deploy()
+  console.log('KaspaInterfaceMulticall', pancakeInterfaceMulticall.address)
 
-  // await tryVerify(kaspaInterfaceMulticall)
+  // await tryVerify(pancakeInterfaceMulticall)
 
   const V3Migrator = new ContractFactory(artifacts.V3Migrator.abi, artifacts.V3Migrator.bytecode, owner)
   const v3Migrator = await V3Migrator.deploy(
-    KaspaV3PoolDeployer_address,
-    kaspaV3Factory_address,
+    kaspaV3PoolDeployer_address,
+    KaspaV3Factory_address,
     config.WNATIVE,
     nonfungiblePositionManager.address
   )
   console.log('V3Migrator', v3Migrator.address)
 
   // await tryVerify(v3Migrator, [
-  //   KaspaV3PoolDeployer_address,
-  //   kaspaV3Factory_address,
+  //   kaspaV3PoolDeployer_address,
+  //   KaspaV3Factory_address,
   //   config.WNATIVE,
   //   nonfungiblePositionManager.address,
   // ])
@@ -189,10 +189,10 @@ async function main() {
   // await tryVerify(tickLens)
 
   const QuoterV2 = new ContractFactory(artifacts.QuoterV2.abi, artifacts.QuoterV2.bytecode, owner)
-  const quoterV2 = await QuoterV2.deploy(KaspaV3PoolDeployer_address, kaspaV3Factory_address, config.WNATIVE)
+  const quoterV2 = await QuoterV2.deploy(kaspaV3PoolDeployer_address, KaspaV3Factory_address, config.WNATIVE)
   console.log('QuoterV2', quoterV2.address)
 
-  // await tryVerify(quoterV2, [KaspaV3PoolDeployer_address, kaspaV3Factory_address, config.WNATIVE])
+  // await tryVerify(quoterV2, [kaspaV3PoolDeployer_address, KaspaV3Factory_address, config.WNATIVE])
 
   const contracts = {
     SwapRouter: swapRouter.address,
@@ -203,7 +203,7 @@ async function main() {
     // NFTDescriptorEx: nftDescriptorEx.address,
     NonfungibleTokenPositionDescriptor: nonfungibleTokenPositionDescriptor.address,
     NonfungiblePositionManager: nonfungiblePositionManager.address,
-    KaspaInterfaceMulticall: kaspaInterfaceMulticall.address,
+    KaspaInterfaceMulticall: pancakeInterfaceMulticall.address,
   }
 
   fs.writeFileSync(`./deployments/${networkName}.json`, JSON.stringify(contracts, null, 2))

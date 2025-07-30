@@ -1,4 +1,4 @@
-# Kaspa V3
+# Kaspa Finance V3
 
 
 ## Deployments

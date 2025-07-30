@@ -2,7 +2,7 @@
 
 ## NonfungiblePositionManager
 
-Wraps Kaspa V3 positions in the ERC721 non-fungible token interface
+Wraps Kaspa Finance V3 positions in the ERC721 non-fungible token interface
 
 ### Position
 

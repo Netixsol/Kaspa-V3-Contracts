@@ -38,6 +38,12 @@ const eth: NetworkUserConfig = {
   accounts: [process.env.KEY_ETH!],
 };
 
+const kasplexTestnet: NetworkUserConfig = {
+  url: "https://rpc.kasplextest.xyz",
+  chainId: 167012,
+  accounts: [process.env.PRIVATE_KEY!],
+};
+
 const config = {
   defaultNetwork: "hardhat",
   networks: {
@@ -46,11 +52,26 @@ const config = {
     ...(process.env.KEY_MAINNET && { bscMainnet }),
     ...(process.env.KEY_GOERLI && { goerli }),
     ...(process.env.KEY_ETH && { eth }),
-    // testnet: bscTestnet,
-    // mainnet: bscMainnet,
+    ...(process.env.KEY_KASPLEX_TESTNET && { kasplexTestnet }),
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: {
+      bscTestnet: "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J",
+      bscMainnet: "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J",
+      goerli: "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J",
+      mainnet: "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J",
+      kasplexTestnet: "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J",
+    },
+    customChains: [
+      {
+        network: "kasplexTestnet",
+        chainId: 167012,
+        urls: {
+          apiURL: "https://frontend.kasplextest.xyz/api",
+          browserURL: "https://frontend.kasplextest.xyz",
+        },
+      },
+    ],
   },
   solidity: {
     compilers: [

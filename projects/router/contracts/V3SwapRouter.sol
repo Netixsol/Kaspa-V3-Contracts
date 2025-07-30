@@ -14,8 +14,8 @@ import './base/OracleSlippage.sol';
 import './libraries/Constants.sol';
 import './libraries/SmartRouterHelper.sol';
 
-/// @title Kaspa V3 Swap Router
-/// @notice Router for stateless execution of swaps against Kaspa V3
+/// @title Kaspa Finance V3 Swap Router
+/// @notice Router for stateless execution of swaps against Kaspa Finance V3
 abstract contract V3SwapRouter is IV3SwapRouter, PeripheryPaymentsWithFeeExtended, OracleSlippage, ReentrancyGuard {
     using Path for bytes;
     using SafeCast for uint256;

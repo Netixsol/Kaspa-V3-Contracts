@@ -35,28 +35,38 @@ describe("MasterChefV3", function () {
     reset();
 
     // Deploy factory
-    const KaspaV3PoolDeployerArtifactC = await ethers.getContractFactoryFromArtifact(KaspaV3PoolDeployerArtifact);
-    const KaspaV3PoolDeployer = await KaspaV3PoolDeployerArtifactC.deploy();
+    const KaspaV3PoolDeployer = await ethers.getContractFactoryFromArtifact(KaspaV3PoolDeployerArtifact);
+    const kaspaV3PoolDeployer = await KaspaV3PoolDeployer.deploy();
 
-    const KaspaV3FactoryArtifactC = await ethers.getContractFactoryFromArtifact(KaspaV3FactoryArtifact);
-    const kaspaV3Factory = await KaspaV3FactoryArtifactC.deploy(KaspaV3PoolDeployer.address);
+    const KaspaV3Factory = await ethers.getContractFactoryFromArtifact(KaspaV3FactoryArtifact);
+    const KaspaV3Factory = await KaspaV3Factory.deploy(kaspaV3PoolDeployer.address);
 
-    await KaspaV3PoolDeployer.setFactoryAddress(kaspaV3Factory.address);
+    await kaspaV3PoolDeployer.setFactoryAddress(KaspaV3Factory.address);
 
-    const KaspaV3SwapRouterArtifact = await ethers.getContractFactoryFromArtifact(KaspaV3SwapRouterArtifact);
-    const KaspaV3SwapRouter = await KaspaV3SwapRouterArtifact.deploy(
-      KaspaV3PoolDeployer.address,
-      kaspaV3Factory.address,
+    const KaspaV3SwapRouter = await ethers.getContractFactoryFromArtifact(KaspaV3SwapRouterArtifact);
+    const kaspaV3SwapRouter = await KaspaV3SwapRouter.deploy(
+      kaspaV3PoolDeployer.address,
+      KaspaV3Factory.address,
       WETH9Address
     );
 
-    await KaspaV3SwapRouter.deploy(KaspaV3PoolDeployer.address, kaspaV3Factory.address, WETH9Address);
+    // Deploy NFT position descriptor
+    // const NonfungibleTokenPositionDescriptor = await ethers.getContractFactoryFromArtifact(
+    //   NftDescriptorOffchainArtifact
+    // );
+    // const baseTokenUri = "https://nft.kaspafinance.com/v3/";
+    // const nonfungibleTokenPositionDescriptor = await upgrades.deployProxy(NonfungibleTokenPositionDescriptor, [
+    //   baseTokenUri,
+    // ]);
+    // await nonfungibleTokenPositionDescriptor.deployed();
+    // TODO:
+    await KaspaV3SwapRouter.deploy(kaspaV3PoolDeployer.address, KaspaV3Factory.address, WETH9Address);
 
     // Deploy NFT position manager
     const NonfungiblePositionManager = await ethers.getContractFactoryFromArtifact(NonfungiblePositionManagerArtifact);
     const nonfungiblePositionManager = await NonfungiblePositionManager.deploy(
-      KaspaV3PoolDeployer.address,
-      kaspaV3Factory.address,
+      kaspaV3PoolDeployer.address,
+      KaspaV3Factory.address,
       WETH9Address,
       // nonfungibleTokenPositionDescriptor.address
       ethers.constants.AddressZero
@@ -66,8 +76,8 @@ describe("MasterChefV3", function () {
 
     // Deploy factory owner contract
     // const KaspaV3FactoryOwner = await ethers.getContractFactoryFromArtifact(KaspaV3FactoryOwnerArtifact);
-    // const KaspaV3FactoryOwner = await KaspaV3FactoryOwner.deploy(kaspaV3Factory.address);
-    // await kaspaV3Factory.setOwner(KaspaV3FactoryOwner.address);
+    // const KaspaV3FactoryOwner = await KaspaV3FactoryOwner.deploy(KaspaV3Factory.address);
+    // await KaspaV3Factory.setOwner(KaspaV3FactoryOwner.address);
 
     // Prepare for master chef v3
     const CakeToken = await ethers.getContractFactoryFromArtifact(CakeTokenArtifact);
@@ -120,13 +130,13 @@ describe("MasterChefV3", function () {
     const firstFarmingBlock = await time.latestBlock();
 
     const KaspaV3LmPoolDeployer = await ethers.getContractFactoryFromArtifact(KaspaV3LmPoolDeployerArtifact);
-    const KaspaV3LmPoolDeployer = await KaspaV3LmPoolDeployer.deploy(
+    const kaspaV3LmPoolDeployer = await KaspaV3LmPoolDeployer.deploy(
       masterChefV3.address
       // KaspaV3FactoryOwner.address
     );
-    // await KaspaV3FactoryOwner.setLmPoolDeployer(KaspaV3LmPoolDeployer.address);
-    await kaspaV3Factory.setLmPoolDeployer(KaspaV3LmPoolDeployer.address);
-    await masterChefV3.setLMPoolDeployer(KaspaV3LmPoolDeployer.address);
+    // await KaspaV3FactoryOwner.setLmPoolDeployer(kaspaV3LmPoolDeployer.address);
+    await KaspaV3Factory.setLmPoolDeployer(kaspaV3LmPoolDeployer.address);
+    await masterChefV3.setLMPoolDeployer(kaspaV3LmPoolDeployer.address);
 
     // Deploy mock ERC20 tokens
     const tokenA = await ERC20Mock.deploy("Token A", "A");
@@ -147,10 +157,10 @@ describe("MasterChefV3", function () {
     await tokenD.mint(user1.address, ethers.utils.parseUnits("1000"));
     await tokenD.mint(user2.address, ethers.utils.parseUnits("1000"));
 
-    await tokenA.connect(admin).approve(KaspaV3SwapRouter.address, ethers.constants.MaxUint256);
-    await tokenB.connect(admin).approve(KaspaV3SwapRouter.address, ethers.constants.MaxUint256);
-    await tokenC.connect(admin).approve(KaspaV3SwapRouter.address, ethers.constants.MaxUint256);
-    await tokenD.connect(admin).approve(KaspaV3SwapRouter.address, ethers.constants.MaxUint256);
+    await tokenA.connect(admin).approve(kaspaV3SwapRouter.address, ethers.constants.MaxUint256);
+    await tokenB.connect(admin).approve(kaspaV3SwapRouter.address, ethers.constants.MaxUint256);
+    await tokenC.connect(admin).approve(kaspaV3SwapRouter.address, ethers.constants.MaxUint256);
+    await tokenD.connect(admin).approve(kaspaV3SwapRouter.address, ethers.constants.MaxUint256);
 
     await tokenA.connect(user1).approve(nonfungiblePositionManager.address, ethers.constants.MaxUint256);
     await tokenB.connect(user1).approve(nonfungiblePositionManager.address, ethers.constants.MaxUint256);
@@ -219,7 +229,7 @@ describe("MasterChefV3", function () {
     this.poolAddresses = poolAddresses;
     this.cakeToken = cakeToken;
     this.liquidityAmounts = liquidityAmounts;
-    this.swapRouter = KaspaV3SwapRouter;
+    this.swapRouter = kaspaV3SwapRouter;
 
     await network.provider.send("evm_setAutomine", [false]);
   });

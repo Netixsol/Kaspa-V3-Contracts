@@ -1,13 +1,13 @@
 {
   "name": "@kasplex/v3-periphery",
-  "description": "🎚 Peripheral smart contracts for interacting with Kaspa V3",
+  "description": "🎚 Peripheral smart contracts for interacting with Kaspa Finance V3",
   "license": "GPL-2.0-or-later",
   "publishConfig": {
     "access": "public"
   },
   "version": "1.0.2",
   "keywords": [
-    "kaspa",
+    "kaspa finance",
     "periphery",
     "v3"
   ],
@@ -31,11 +31,11 @@
     "base64-sol": "1.0.1"
   },
   "devDependencies": {
-    "@kasplex/v3-core": "*",
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-etherscan": "^3.1.7",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@openzeppelin/hardhat-upgrades": "^1.22.1",
+    "@kasplex/v3-core": "*",
     "@typechain/ethers-v5": "^10.2.0",
     "@types/chai": "^4.2.6",
     "@types/mocha": "^5.2.7",
@@ -43,7 +43,7 @@
     "decimal.js": "^10.2.1",
     "ethereum-waffle": "^3.0.2",
     "ethers": "^5.0.8",
-    "hardhat": "^2.26.0",
+    "hardhat": "^2.6.8",
     "hardhat-typechain": "^0.3.5",
     "hardhat-watcher": "^2.1.1",
     "is-svg": "^4.3.1",

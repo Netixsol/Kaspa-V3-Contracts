@@ -2,7 +2,7 @@
 
 ## IV2SwapRouter
 
-Functions for swapping tokens via Kaspa V2
+Functions for swapping tokens via Kaspa Finance V2
 
 ### swapExactTokensForTokens
 

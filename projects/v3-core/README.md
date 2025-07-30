@@ -1,6 +1,6 @@
-# Kaspa V3
+# Kaspa Finance V3
 
-This repository contains the core smart contracts for the Kaspa V3 Protocol.
+This repository contains the core smart contracts for the Kaspa Finance V3 Protocol.
 For higher level contracts, see the [v3-periphery](../v3-periphery/)
 repository.
 
@@ -22,12 +22,12 @@ import {
 ```
 
 This will ensure that you are testing against the same bytecode that is deployed to
-mainnet and public testnets, and all Kaspa code will correctly interoperate with
+mainnet and public testnets, and all Kaspa Finance code will correctly interoperate with
 your local deployment.
 
 ## Using solidity interfaces
 
-The Kaspa v3 interfaces are available for import into solidity smart contracts
+The Kaspa Finance v3 interfaces are available for import into solidity smart contracts
 via the npm artifact `@kasplex/v3-core`, e.g.:
 
 ```solidity

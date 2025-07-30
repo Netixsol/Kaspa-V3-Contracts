@@ -17,8 +17,8 @@ import './libraries/PoolAddress.sol';
 import './libraries/CallbackValidation.sol';
 import './interfaces/external/IWETH9.sol';
 
-/// @title Kaspa V3 Swap Router
-/// @notice Router for stateless execution of swaps against Kaspa V3
+/// @title Kaspa Finance V3 Swap Router
+/// @notice Router for stateless execution of swaps against Kaspa Finance V3
 contract SwapRouter is
     ISwapRouter,
     PeripheryImmutableState,

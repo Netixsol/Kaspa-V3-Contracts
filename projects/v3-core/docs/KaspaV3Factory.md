@@ -2,7 +2,7 @@
 
 ## KaspaV3Factory
 
-Deploys Kaspa V3 pools and manages ownership and control over pool protocol fees
+Deploys Kaspa Finance V3 pools and manages ownership and control over pool protocol fees
 
 ### owner
 

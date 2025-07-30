@@ -1,6 +1,6 @@
-# Kaspa V3 Periphery
+# Kaspa Finance V3 Periphery
 
-This repository contains the periphery smart contracts for the Kaspa V3 Protocol.
+This repository contains the periphery smart contracts for the Kaspa Finance V3 Protocol.
 For the lower level core contracts, see the [v3-core](../v3-core/)
 repository.
 
@@ -22,12 +22,12 @@ import {
 ```
 
 This will ensure that you are testing against the same bytecode that is deployed to
-mainnet and public testnets, and all Kaspa code will correctly interoperate with
+mainnet and public testnets, and all Kaspa Finance code will correctly interoperate with
 your local deployment.
 
 ## Using solidity interfaces
 
-The Kaspa v3 periphery interfaces are available for import into solidity smart contracts
+The Kaspa Finance v3 periphery interfaces are available for import into solidity smart contracts
 via the npm artifact `@kasplex/v3-periphery`, e.g.:
 
 ```solidity

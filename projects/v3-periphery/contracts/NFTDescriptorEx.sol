@@ -136,7 +136,7 @@ contract NFTDescriptorEx {
         return
         string(
             abi.encodePacked(
-                'This NFT represents a liquidity position in a Kaspa V3 ',
+                'This NFT represents a liquidity position in a Kaspa Finance V3 ',
                 quoteTokenSymbol,
                 '-',
                 baseTokenSymbol,

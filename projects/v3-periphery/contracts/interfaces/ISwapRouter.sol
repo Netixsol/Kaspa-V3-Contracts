@@ -5,7 +5,7 @@ pragma abicoder v2;
 import '@kasplex/v3-core/contracts/interfaces/callback/IKaspaV3SwapCallback.sol';
 
 /// @title Router token swapping functionality
-/// @notice Functions for swapping tokens via Kaspa V3
+/// @notice Functions for swapping tokens via Kaspa Finance V3
 interface ISwapRouter is IKaspaV3SwapCallback {
     struct ExactInputSingleParams {
         address tokenIn;

@@ -2,7 +2,7 @@
 
 ## IKaspaV3Factory
 
-The Kaspa V3 Factory facilitates creation of Kaspa V3 pools and control over the protocol fees
+The Kaspa Finance V3 Factory facilitates creation of Kaspa Finance V3 pools and control over the protocol fees
 
 ### TickSpacingExtraInfo
 

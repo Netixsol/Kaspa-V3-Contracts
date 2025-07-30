@@ -5,8 +5,8 @@ import './interfaces/IKaspaV3Factory.sol';
 import "./interfaces/IKaspaV3PoolDeployer.sol";
 import './interfaces/IKaspaV3Pool.sol';
 
-/// @title Canonical Kaspa V3 factory
-/// @notice Deploys Kaspa V3 pools and manages ownership and control over pool protocol fees
+/// @title Canonical Kaspa Finance V3 factory
+/// @notice Deploys Kaspa Finance V3 pools and manages ownership and control over pool protocol fees
 contract KaspaV3Factory is IKaspaV3Factory {
     /// @inheritdoc IKaspaV3Factory
     address public override owner;

@@ -151,7 +151,7 @@ _Deploys a LmPool_
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| pool | contract IKaspaV3Pool | The contract address of the KaspaFinance V3 pool |
+| pool | contract IKaspaV3Pool | The contract address of the Kaspa Finance V3 pool |
 
 ## IKaspaV3LmPool
 

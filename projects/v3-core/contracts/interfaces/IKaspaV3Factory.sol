@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
-/// @title The interface for the KaspaFinance V3 Factory
-/// @notice The KaspaFinance V3 Factory facilitates creation of KaspaFinance V3 pools and control over the protocol fees
+/// @title The interface for the Kaspa Finance V3 Factory
+/// @notice The Kaspa Finance V3 Factory facilitates creation of Kaspa Finance V3 pools and control over the protocol fees
 interface IKaspaV3Factory {
     struct TickSpacingExtraInfo {
         bool whitelistRequested;

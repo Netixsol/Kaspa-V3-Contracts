@@ -2,7 +2,7 @@
 
 ## LiquidityManagement
 
-Internal functions for safely managing liquidity in Kaspa V3
+Internal functions for safely managing liquidity in Kaspa Finance V3
 
 ### MintCallbackData
 

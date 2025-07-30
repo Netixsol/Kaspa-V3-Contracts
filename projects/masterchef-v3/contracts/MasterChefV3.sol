@@ -551,7 +551,6 @@ contract MasterChefV3 is INonfungiblePositionManagerStruct, Multicall, Ownable, 
     function pay(address _token, uint256 _amount) internal {
         if (_token == WETH && msg.value > 0) {
             if (msg.value != _amount) revert InconsistentAmount();
-             safeTransferETH(address(this), _amount);
         } else {
             IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
         }

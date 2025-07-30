@@ -5,10 +5,10 @@
   "publishConfig": {
     "access": "public"
   },
-  "author": "Kaspa",
+  "author": "Kaspa Finance",
   "license": "MIT",
   "keywords": [
-    "kaspa",
+    "kaspa finance",
     "masterchef",
     "v3"
   ],

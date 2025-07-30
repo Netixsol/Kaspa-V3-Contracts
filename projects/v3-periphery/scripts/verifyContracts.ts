@@ -2,13 +2,13 @@ import bn from "bignumber.js";
 import { BigNumber, Contract } from "ethers";
 import { ethers, waffle, run } from "hardhat";
 
-const KaspaV3PoolDeployer = '0xB0edb49557c583290368e04FffaBb293FC224Ae1';
-const kaspaV3Factory = '0xC200B8E8eE9A4BFd22a2F31a3a64e581A3c9e793';
-const swapRouter = '0xCbBEc95002838Aa770ED13889d52E911a13d55d1';
-const nftDescriptor = '0xcF7C39A23F4Aaba3ab182f88c10E025693569871';
-const nftDescriptorEx = '0x3a20994A97faD01D0BeB15655db23293608c1d60';
-const nonfungibleTokenPositionDescriptor = '0xDD312467b28783F6833121f34c2A5F78A91D60E8';
-const nonfungiblePositionManager = '0x88122D163F9363f4EE8C59b5fA9761b1C48ed3a1';
+const kaspaV3PoolDeployer = '0x238C4b82C5093E00ce44de78701E74d5bDd78634';
+const KaspaV3Factory = '0x1b72D7165a0D7256a4F197765C15bb70bC5D66A8';
+const swapRouter = '0xcC2c3d5ed3774e363a5E07AddA43ec2D5bE3E38F';
+const nftDescriptor = '0x27a8a033863f40890FC5Bcdc288F9cB2aF876793';
+const nftDescriptorEx = '0x65C283bE0B7DF3Ef111A87181254CDc9020063D2';
+const nonfungibleTokenPositionDescriptor = '0x1346602dB2b30A3e7907bBc08401b92191538098';
+const nonfungiblePositionManager = '0x4E25637cF39822364b877F81B18c5B6CF0eeF589';
 
 function isAscii(str: string): boolean {
   return /^[\x00-\x7F]*$/.test(str)
@@ -30,9 +30,9 @@ async function main() {
     address: swapRouter,
     contract: 'contracts/SwapRouter.sol:SwapRouter',
     constructorArguments: [
-      KaspaV3PoolDeployer,
-      kaspaV3Factory,
-      '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd', //WBNB
+      kaspaV3PoolDeployer,
+      KaspaV3Factory,
+      '0xD18FCd278F7156DaA2a506dBC2A4a15337B91b94 ', //WBNB
     ],
   });
 
@@ -52,7 +52,7 @@ async function main() {
   //     address: nonfungibleTokenPositionDescriptor,
   //     contract: 'contracts/NonfungibleTokenPositionDescriptor.sol:NonfungibleTokenPositionDescriptor',
   //     constructorArguments: [
-  //         '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd', //WBNB
+  //         '0xD18FCd278F7156DaA2a506dBC2A4a15337B91b94 ', //WBNB
   //         '0x4554480000000000000000000000000000000000000000000000000000000000',
   //         nftDescriptorEx
   //     ],
@@ -62,9 +62,9 @@ async function main() {
     address: nonfungiblePositionManager,
     contract: 'contracts/NonfungiblePositionManager.sol:NonfungiblePositionManager',
     constructorArguments: [
-      KaspaV3PoolDeployer,
-      kaspaV3Factory,
-      "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd", // WBNB
+      kaspaV3PoolDeployer,
+      KaspaV3Factory,
+      "0xD18FCd278F7156DaA2a506dBC2A4a15337B91b94 ", // WBNB
       nonfungibleTokenPositionDescriptor,
     ],
   });

@@ -6,6 +6,7 @@ import '@typechain/hardhat'
 import 'hardhat-watcher'
 import 'dotenv/config'
 import 'solidity-docgen'
+
 require('dotenv').config({ path: require('find-config')('.env') })
 
 const LOW_OPTIMIZER_COMPILER_SETTINGS = {
@@ -78,12 +79,9 @@ const kasplexTestnet: NetworkUserConfig = {
   url: 'https://rpc.kasplextest.xyz',
   chainId: 167012,
   accounts: [process.env.PRIVATE_KEY!],
-  timeout: 60000,
-  gas: 'auto',
-  gasPrice: 'auto',
 }
 
-export default {
+const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       allowUnlimitedContractSize: true,
@@ -93,15 +91,14 @@ export default {
     ...(process.env.KEY_GOERLI && { goerli }),
     ...(process.env.KEY_ETH && { eth }),
     ...(process.env.PRIVATE_KEY && { kasplexTestnet }),
-    // mainnet: bscMainnet,
   },
   etherscan: {
     apiKey: {
-      bscTestnet: process.env.ETHERSCAN_API_KEY!,
-      bsc: process.env.ETHERSCAN_API_KEY!,
-      goerli: process.env.ETHERSCAN_API_KEY!,
-      mainnet: process.env.ETHERSCAN_API_KEY!,
-      kasplexTestnet: process.env.ETHERSCAN_API_KEY || 'dummy-api-key',
+      bscTestnet: 'MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J',
+      bscMainnet: 'MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J',
+      goerli: 'MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J',
+      mainnet: 'MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J',
+      kasplexTestnet: 'MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J',
     },
     customChains: [
       {
@@ -133,3 +130,5 @@ export default {
     pages: 'files',
   },
 }
+
+export default config

@@ -7,7 +7,7 @@ async function main() {
   console.log('owner', owner.address)
 
   const NonfungibleTokenPositionDescriptor = await ethers.getContractFactoryFromArtifact(NftDescriptorOffchainArtifact)
-  const baseTokenUri = 'https://nft.kaspa.com/v3/'
+  const baseTokenUri = 'https://nft.kaspafinance.com/v3/'
   const nonfungibleTokenPositionDescriptor = await upgrades.deployProxy(NonfungibleTokenPositionDescriptor, [
     baseTokenUri,
   ])

@@ -13,7 +13,7 @@ import '../libraries/TransferHelper.sol';
 import '../interfaces/ISwapRouter.sol';
 
 /// @title Flash contract implementation
-/// @notice An example contract using the Kaspa V3 flash function
+/// @notice An example contract using the Kaspa Finance V3 flash function
 contract PairFlash is IKaspaV3FlashCallback, PeripheryPayments {
     using LowGasSafeMath for uint256;
     using LowGasSafeMath for int256;

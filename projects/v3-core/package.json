@@ -1,13 +1,13 @@
 {
   "name": "@kasplex/v3-core",
-  "description": "🥞 Core smart contracts of KASPA FINANCE V3",
+  "description": "🥞 Core smart contracts of Kaspa Finance V3",
   "license": "GPL-2.0-or-later",
   "publishConfig": {
     "access": "public"
   },
   "version": "1.0.2",
   "keywords": [
-    "kaspaFinance",
+    "kaspa finance",
     "core",
     "v3"
   ],
@@ -25,7 +25,7 @@
   "devDependencies": {
     "@kasplex/common": "*",
     "@kasplex/v3-lm-pool": "*",
-    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-etherscan": "^2.1.8",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@typechain/ethers-v5": "^10.2.0",
@@ -34,7 +34,7 @@
     "chai": "^4.2.0",
     "decimal.js": "^10.2.1",
     "ethereum-waffle": "^3.0.2",
-    "ethers": "^6.15.0",
+    "ethers": "^5.0.8",
     "hardhat": "^2.2.0",
     "hardhat-typechain": "^0.3.5",
     "hardhat-watcher": "^2.1.1",

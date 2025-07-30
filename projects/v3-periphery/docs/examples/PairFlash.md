@@ -2,7 +2,7 @@
 
 ## PairFlash
 
-An example contract using the Kaspa V3 flash function
+An example contract using the Kaspa Finance V3 flash function
 
 ### swapRouter
 

@@ -22,6 +22,20 @@ const LOW_OPTIMIZER_COMPILER_SETTINGS = {
     },
   },
 }
+const MID_LOWEST_OPTIMIZER_COMPILER_SETTINGS = {
+  version: '0.7.6',
+  settings: {
+    evmVersion: 'istanbul',
+    optimizer: {
+      enabled: true,
+      runs: 1_000,
+    },
+    metadata: {
+      bytecodeHash: 'none',
+    },
+  },
+}
+
 
 const LOWEST_OPTIMIZER_COMPILER_SETTINGS = {
   version: '0.7.6',
@@ -30,20 +44,6 @@ const LOWEST_OPTIMIZER_COMPILER_SETTINGS = {
     optimizer: {
       enabled: true,
       runs: 200,
-    },
-    metadata: {
-      bytecodeHash: 'none',
-    },
-  },
-}
-
-const ULTRA_LOW_OPTIMIZER_COMPILER_SETTINGS = {
-  version: '0.7.6',
-  settings: {
-    evmVersion: 'istanbul',
-    optimizer: {
-      enabled: true,
-      runs: 50,
     },
     metadata: {
       bytecodeHash: 'none',
@@ -93,10 +93,6 @@ const kasplexTestnet: NetworkUserConfig = {
   url: 'https://rpc.kasplextest.xyz',
   chainId: 167012,
   accounts: [process.env.PRIVATE_KEY!],
-  timeout: 120000,
-  gas: 'auto',
-  gasPrice: 'auto',
-  allowUnlimitedContractSize: true,
 }
 
 export default {
@@ -108,17 +104,10 @@ export default {
     ...(process.env.KEY_MAINNET && { bscMainnet }),
     ...(process.env.KEY_GOERLI && { goerli }),
     ...(process.env.KEY_ETH && { eth }),
-    ...(process.env.PRIVATE_KEY && { kasplexTestnet }),
-    // mainnet: bscMainnet,
+    ...(process.env.KEY_KASPLEX_TESTNET && { kasplexTestnet }),
   },
   etherscan: {
-    apiKey: {
-      bscTestnet: process.env.ETHERSCAN_API_KEY!,
-      bsc: process.env.ETHERSCAN_API_KEY!,
-      goerli: process.env.ETHERSCAN_API_KEY!,
-      mainnet: process.env.ETHERSCAN_API_KEY!,
-      kasplexTestnet: process.env.ETHERSCAN_API_KEY || 'dummy-api-key',
-    },
+    apiKey: process.env.ETHERSCAN_API_KEY || '',
     customChains: [
       {
         network: 'kasplexTestnet',
@@ -135,10 +124,10 @@ export default {
     overrides: {
       'contracts/NonfungiblePositionManager.sol': LOW_OPTIMIZER_COMPILER_SETTINGS,
       'contracts/test/MockTimeNonfungiblePositionManager.sol': LOW_OPTIMIZER_COMPILER_SETTINGS,
-      'contracts/test/NFTDescriptorTest.sol': ULTRA_LOW_OPTIMIZER_COMPILER_SETTINGS,
-      'contracts/NFTDescriptorEx.sol': ULTRA_LOW_OPTIMIZER_COMPILER_SETTINGS,
+      'contracts/test/NFTDescriptorTest.sol': LOWEST_OPTIMIZER_COMPILER_SETTINGS,
+      'contracts/NFTDescriptorEx.sol': LOWEST_OPTIMIZER_COMPILER_SETTINGS,
       'contracts/NonfungibleTokenPositionDescriptor.sol': LOWEST_OPTIMIZER_COMPILER_SETTINGS,
-      'contracts/libraries/NFTDescriptor.sol': ULTRA_LOW_OPTIMIZER_COMPILER_SETTINGS,
+      'contracts/libraries/NFTDescriptor.sol': MID_LOWEST_OPTIMIZER_COMPILER_SETTINGS,
     },
   },
   watcher: {

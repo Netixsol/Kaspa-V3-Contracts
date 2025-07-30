@@ -12,8 +12,8 @@ import './base/PeripheryPaymentsWithFeeExtended.sol';
 import './libraries/Constants.sol';
 import './libraries/SmartRouterHelper.sol';
 
-/// @title Kaspa V2 Swap Router
-/// @notice Router for stateless execution of swaps against Kaspa V2
+/// @title Kaspa Finance V2 Swap Router
+/// @notice Router for stateless execution of swaps against Kaspa Finance V2
 abstract contract V2SwapRouter is IV2SwapRouter, ImmutableState, PeripheryPaymentsWithFeeExtended, ReentrancyGuard {
     using LowGasSafeMath for uint256;
 

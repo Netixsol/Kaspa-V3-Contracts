@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+
 pragma solidity >=0.5.0;
 
 /// @title Permissionless pool actions
@@ -468,16 +469,16 @@ interface IKaspaV3PoolState {
 // File contracts/interfaces/IKaspaV3Pool.sol
 
 pragma solidity >=0.5.0;
-/// @title The interface for a Kaspa V3 Pool
-/// @notice A Kaspa pool facilitates swapping and automated market making between any two assets that strictly conform
+/// @title The interface for a Kaspa Finance V3 Pool
+/// @notice A Kaspa Finance pool facilitates swapping and automated market making between any two assets that strictly conform
 /// to the ERC20 specification
 /// @dev The pool interface is broken up into many smaller pieces
 interface IKaspaV3Pool is
     IKaspaV3PoolImmutables,
     IKaspaV3PoolState,
     IKaspaV3PoolDerivedState,
-    IKaspaV3PoolOwnerActions,
     IKaspaV3PoolActions,
+    IKaspaV3PoolOwnerActions,
     IKaspaV3PoolEvents
 {
 
@@ -488,8 +489,8 @@ interface IKaspaV3Pool is
 
 pragma solidity >=0.5.0;
 
-/// @title The interface for the KaspaFinance V3 Factory
-/// @notice The KaspaFinance V3 Factory facilitates creation of KaspaFinance V3 pools and control over the protocol fees
+/// @title The interface for the Kaspa Finance V3 Factory
+/// @notice The Kaspa Finance V3 Factory facilitates creation of Kaspa Finance V3 pools and control over the protocol fees
 interface IKaspaV3Factory {
     struct TickSpacingExtraInfo {
         bool whitelistRequested;
@@ -615,7 +616,7 @@ interface IKaspaV3Factory {
 
 pragma solidity >=0.5.0;
 
-/// @title An interface for a contract that is capable of deploying Kaspa V3 Pools
+/// @title An interface for a contract that is capable of deploying Kaspa Finance V3 Pools
 /// @notice A contract that constructs a pool must implement this to pass arguments to the pool
 /// @dev This is used to avoid having constructor arguments in the pool contract, which results in the init code hash
 /// of the pool being constant allowing the CREATE2 address of the pool to be cheaply computed on-chain
@@ -651,8 +652,8 @@ interface IKaspaV3PoolDeployer {
 // File contracts/KaspaV3Factory.sol
 
 pragma solidity =0.7.6;
-/// @title Canonical Kaspa V3 factory
-/// @notice Deploys Kaspa V3 pools and manages ownership and control over pool protocol fees
+/// @title Canonical Kaspa Finance V3 factory
+/// @notice Deploys Kaspa Finance V3 pools and manages ownership and control over pool protocol fees
 contract KaspaV3Factory is IKaspaV3Factory {
     /// @inheritdoc IKaspaV3Factory
     address public override owner;

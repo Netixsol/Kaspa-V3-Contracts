@@ -52,7 +52,7 @@ Deterministically computes the pool address given the factory and PoolKey
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| deployer | address | The Kaspa V3 deployer contract address |
+| deployer | address | The Kaspa Finance V3 deployer contract address |
 | key | struct PoolAddress.PoolKey | The PoolKey |
 
 #### Return Values

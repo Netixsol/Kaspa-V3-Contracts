@@ -33,7 +33,7 @@ contract KaspaV3LmPoolDeployer {
     }
 
     /// @dev Deploys a LmPool
-    /// @param pool The contract address of the KaspaFinance V3 pool
+    /// @param pool The contract address of the Kaspa Finance V3 pool
     function deploy(address pool) external onlyMasterChef returns (address lmPool) {
         parameters = Parameters({pool: pool, masterChef: masterChef});
 

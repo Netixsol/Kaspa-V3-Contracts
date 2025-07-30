@@ -469,16 +469,16 @@ interface IKaspaV3PoolState {
 // File contracts/interfaces/IKaspaV3Pool.sol
 
 pragma solidity >=0.5.0;
-/// @title The interface for a Kaspa V3 Pool
-/// @notice A Kaspa pool facilitates swapping and automated market making between any two assets that strictly conform
+/// @title The interface for a Kaspa Finance V3 Pool
+/// @notice A Kaspa Finance pool facilitates swapping and automated market making between any two assets that strictly conform
 /// to the ERC20 specification
 /// @dev The pool interface is broken up into many smaller pieces
 interface IKaspaV3Pool is
     IKaspaV3PoolImmutables,
     IKaspaV3PoolState,
     IKaspaV3PoolDerivedState,
-    IKaspaV3PoolOwnerActions,
     IKaspaV3PoolActions,
+    IKaspaV3PoolOwnerActions,
     IKaspaV3PoolEvents
 {
 
@@ -566,8 +566,8 @@ interface IKaspaV3SwapCallback {
 
 pragma solidity >=0.5.0;
 
-/// @title Minimal ERC20 interface for Kaspa
-/// @notice Contains a subset of the full ERC20 interface that is used in Kaspa V3
+/// @title Minimal ERC20 interface for Kaspa Finance
+/// @notice Contains a subset of the full ERC20 interface that is used in Kaspa Finance V3
 interface IERC20Minimal {
     /// @notice Returns the balance of a token
     /// @param account The account for which to look up the number of tokens it has, i.e. its balance
@@ -621,8 +621,8 @@ interface IERC20Minimal {
 
 pragma solidity >=0.5.0;
 
-/// @title The interface for the KaspaFinance V3 Factory
-/// @notice The KaspaFinance V3 Factory facilitates creation of KaspaFinance V3 pools and control over the protocol fees
+/// @title The interface for the Kaspa Finance V3 Factory
+/// @notice The Kaspa Finance V3 Factory facilitates creation of Kaspa Finance V3 pools and control over the protocol fees
 interface IKaspaV3Factory {
     struct TickSpacingExtraInfo {
         bool whitelistRequested;
@@ -748,7 +748,7 @@ interface IKaspaV3Factory {
 
 pragma solidity >=0.5.0;
 
-/// @title An interface for a contract that is capable of deploying Kaspa V3 Pools
+/// @title An interface for a contract that is capable of deploying Kaspa Finance V3 Pools
 /// @notice A contract that constructs a pool must implement this to pass arguments to the pool
 /// @dev This is used to avoid having constructor arguments in the pool contract, which results in the init code hash
 /// of the pool being constant allowing the CREATE2 address of the pool to be cheaply computed on-chain
@@ -3246,5 +3246,59 @@ contract KaspaV3Pool is IKaspaV3Pool {
     function setLmPool(address _lmPool) external override onlyFactoryOrFactoryOwner {
       lmPool = IKaspaV3LmPool(_lmPool);
       emit SetLmPoolEvent(address(_lmPool));
+    }
+}
+
+
+// File contracts/KaspaV3PoolDeployer.sol
+
+pragma solidity =0.7.6;
+contract KaspaV3PoolDeployer is IKaspaV3PoolDeployer {
+    struct Parameters {
+        address factory;
+        address token0;
+        address token1;
+        uint24 fee;
+        int24 tickSpacing;
+    }
+
+    /// @inheritdoc IKaspaV3PoolDeployer
+    Parameters public override parameters;
+
+    address public factoryAddress;
+
+    /// @notice Emitted when factory address is set
+    event SetFactoryAddress(address indexed factory);
+
+    modifier onlyFactory() {
+        require(msg.sender == factoryAddress, "only factory can call deploy");
+        _;
+    }
+
+    function setFactoryAddress(address _factoryAddress) external {
+        require(factoryAddress == address(0), "already initialized");
+
+        factoryAddress = _factoryAddress;
+
+        emit SetFactoryAddress(_factoryAddress);
+    }
+
+    /// @dev Deploys a pool with the given parameters by transiently setting the parameters storage slot and then
+    /// clearing it after deploying the pool.
+    /// @param factory The contract address of the Kaspa Finance V3 factory
+    /// @param token0 The first token of the pool by address sort order
+    /// @param token1 The second token of the pool by address sort order
+    /// @param fee The fee collected upon every swap in the pool, denominated in hundredths of a bip
+    /// @param tickSpacing The spacing between usable ticks
+    function deploy(
+        address factory,
+        address token0,
+        address token1,
+        uint24 fee,
+        int24 tickSpacing
+    ) external override onlyFactory returns (address pool) {
+        parameters = Parameters({factory: factory, token0: token0, token1: token1, fee: fee, tickSpacing: tickSpacing});
+        pool = address(new KaspaV3Pool{salt: keccak256(abi.encode(token0, token1, fee))}());
+        delete parameters;
     }
 }

@@ -2,7 +2,7 @@
 
 ## IERC20Minimal
 
-Contains a subset of the full ERC20 interface that is used in Kaspa V3
+Contains a subset of the full ERC20 interface that is used in Kaspa Finance V3
 
 ### balanceOf
 

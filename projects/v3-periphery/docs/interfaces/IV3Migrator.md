@@ -2,7 +2,7 @@
 
 ## IV3Migrator
 
-Enables migration of liqudity from Kaspa v2-compatible pairs into Kaspa v3 pools
+Enables migration of liqudity from Kaspa Finance v2-compatible pairs into Kaspa Finance v3 pools
 
 ### MigrateParams
 

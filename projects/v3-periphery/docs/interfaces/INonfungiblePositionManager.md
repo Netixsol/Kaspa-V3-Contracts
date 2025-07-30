@@ -2,7 +2,7 @@
 
 ## INonfungiblePositionManager
 
-Wraps Kaspa V3 positions in a non-fungible token interface which allows for them to be transferred
+Wraps Kaspa Finance V3 positions in a non-fungible token interface which allows for them to be transferred
 and authorized.
 
 ### IncreaseLiquidity

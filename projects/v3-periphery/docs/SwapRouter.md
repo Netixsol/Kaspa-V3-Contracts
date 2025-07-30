@@ -2,7 +2,7 @@
 
 ## SwapRouter
 
-Router for stateless execution of swaps against Kaspa V3
+Router for stateless execution of swaps against Kaspa Finance V3
 
 ### constructor
 

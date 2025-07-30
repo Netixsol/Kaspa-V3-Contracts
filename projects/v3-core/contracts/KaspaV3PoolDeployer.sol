@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import './interfaces/IKaspaV3PoolDeployer.sol';
 
 import './KaspaV3Pool.sol';
 
-contract KaspaV3PoolDeployer is IKaspaV3PoolDeployer, Ownable {
+contract KaspaV3PoolDeployer is IKaspaV3PoolDeployer {
     struct Parameters {
         address factory;
         address token0;
@@ -24,19 +23,21 @@ contract KaspaV3PoolDeployer is IKaspaV3PoolDeployer, Ownable {
     event SetFactoryAddress(address indexed factory);
 
     modifier onlyFactory() {
-        require(msg.sender == factoryAddress, 'only factory can call deploy');
+        require(msg.sender == factoryAddress, "only factory can call deploy");
         _;
     }
 
-    function setFactoryAddress(address _factoryAddress) external onlyOwner {
-        require(factoryAddress == address(0), 'already initialized');
+    function setFactoryAddress(address _factoryAddress) external {
+        require(factoryAddress == address(0), "already initialized");
+
         factoryAddress = _factoryAddress;
+
         emit SetFactoryAddress(_factoryAddress);
     }
 
     /// @dev Deploys a pool with the given parameters by transiently setting the parameters storage slot and then
     /// clearing it after deploying the pool.
-    /// @param factory The contract address of the Kaspa V3 factory
+    /// @param factory The contract address of the Kaspa Finance V3 factory
     /// @param token0 The first token of the pool by address sort order
     /// @param token1 The second token of the pool by address sort order
     /// @param fee The fee collected upon every swap in the pool, denominated in hundredths of a bip

@@ -1,6 +1,6 @@
 # Solidity API
 
-## IKaspaV3PoolActions
+## IKaspaV3PoolOwnerActions
 
 Contains pool methods that may only be called by the factory owner
 
