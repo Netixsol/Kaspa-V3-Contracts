@@ -13,13 +13,8 @@ const LOW_OPTIMIZER_COMPILER_SETTINGS = {
   version: '0.7.6',
   settings: {
     evmVersion: 'istanbul',
-    optimizer: {
-      enabled: true,
-      runs: 2_000,
-    },
-    metadata: {
-      bytecodeHash: 'none',
-    },
+    optimizer: { enabled: true, runs: 2000 },
+    metadata: { bytecodeHash: 'none' },
   },
 }
 
@@ -27,13 +22,8 @@ const LOWEST_OPTIMIZER_COMPILER_SETTINGS = {
   version: '0.7.6',
   settings: {
     evmVersion: 'istanbul',
-    optimizer: {
-      enabled: true,
-      runs: 400,
-    },
-    metadata: {
-      bytecodeHash: 'none',
-    },
+    optimizer: { enabled: true, runs: 400 },
+    metadata: { bytecodeHash: 'none' },
   },
 }
 
@@ -41,13 +31,8 @@ const DEFAULT_COMPILER_SETTINGS = {
   version: '0.7.6',
   settings: {
     evmVersion: 'istanbul',
-    optimizer: {
-      enabled: true,
-      runs: 1_000_000,
-    },
-    metadata: {
-      bytecodeHash: 'none',
-    },
+    optimizer: { enabled: true, runs: 1_000_000 },
+    metadata: { bytecodeHash: 'none' },
   },
 }
 
@@ -81,16 +66,27 @@ const kasplexTestnet: NetworkUserConfig = {
   accounts: [process.env.PRIVATE_KEY!],
 }
 
+/**
+ * ✅ IGRA Devnet
+ * Needs in .env:
+ *   IGRA_API_KEY=xxxxx
+ *   KEY_IGRA_DEVNET=0xyourprivatekey
+ */
+const igra: NetworkUserConfig = {
+  url: `https://devnet.igralabs.com:8545/${process.env.IGRA_API_KEY}`,
+  chainId: 2600, // ⚠️ confirm with "npx hardhat console --network igra"
+  accounts: [process.env.PRIVATE_KEY!],
+}
+
 const config: HardhatUserConfig = {
   networks: {
-    hardhat: {
-      allowUnlimitedContractSize: true,
-    },
+    hardhat: { allowUnlimitedContractSize: true },
     ...(process.env.KEY_TESTNET && { bscTestnet }),
     ...(process.env.KEY_MAINNET && { bscMainnet }),
     ...(process.env.KEY_GOERLI && { goerli }),
     ...(process.env.KEY_ETH && { eth }),
     ...(process.env.PRIVATE_KEY && { kasplexTestnet }),
+    ...(process.env.PRIVATE_KEY && { igra }), // ✅ consistent name
   },
   etherscan: {
     apiKey: {
@@ -99,6 +95,7 @@ const config: HardhatUserConfig = {
       goerli: 'MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J',
       mainnet: 'MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J',
       kasplexTestnet: 'MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J',
+      // no etherscan for Igra
     },
     customChains: [
       {
@@ -107,6 +104,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://frontend.kasplextest.xyz/api',
           browserURL: 'https://frontend.kasplextest.xyz',
+        },
+      },
+      {
+        network: 'igra', // ✅ consistent name
+        chainId: 2600,
+        urls: {
+          apiURL: 'https://explorer.devnet.igralabs.com/api',
+          browserURL: 'https://explorer.devnet.igralabs.com',
         },
       },
     ],
@@ -126,9 +131,7 @@ const config: HardhatUserConfig = {
       verbose: true,
     },
   },
-  docgen: {
-    pages: 'files',
-  },
+  docgen: { pages: 'files' },
 }
 
 export default config

@@ -6,6 +6,8 @@ const networks = {
   goerli: 'goerli',
   bscMainnet: 'bscMainnet',
   bscTestnet: 'bscTestnet',
+  kasplexTestnet: 'kasplexTestnet',
+  igra: 'igra',   // ✅ consistent
   hardhat: 'hardhat',
 }
 

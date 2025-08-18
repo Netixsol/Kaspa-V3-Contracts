@@ -44,7 +44,16 @@ const kasplexTestnet: NetworkUserConfig = {
   accounts: [process.env.PRIVATE_KEY!],
 };
 
-const config = {
+// ✅ New: Igra Devnet
+// ✅ Igra Network
+const igra: NetworkUserConfig = {
+  url: `https://devnet.igralabs.com:8545/${process.env.IGRA_API_KEY || "LIVE_API_KEY_HERE"}`,
+  chainId: 2600,
+  accounts: [process.env.PRIVATE_KEY!],
+};
+
+
+const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {},
@@ -53,7 +62,8 @@ const config = {
     ...(process.env.KEY_GOERLI && { goerli }),
     ...(process.env.KEY_ETH && { eth }),
     ...(process.env.KEY_KASPLEX_TESTNET && { kasplexTestnet }),
-  },
+    ...(process.env.IGRA_API_KEY && { igra }), // ✅ Consistent name
+  },  
   etherscan: {
     apiKey: {
       bscTestnet: "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J",
@@ -61,6 +71,7 @@ const config = {
       goerli: "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J",
       mainnet: "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J",
       kasplexTestnet: "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J",
+      // no etherscan support for Igra yet
     },
     customChains: [
       {
@@ -71,6 +82,15 @@ const config = {
           browserURL: "https://frontend.kasplextest.xyz",
         },
       },
+      {
+        network: "igra", // ✅ Consistent name
+        chainId: 2600,
+        urls: {
+          apiURL: "https://explorer.devnet.igralabs.com/api", // not sure if API endpoint exists
+          browserURL: "https://explorer.devnet.igralabs.com",
+        },
+      },
+      
     ],
   },
   solidity: {
