@@ -5,8 +5,8 @@ async function main() {
   const networkName = network.name
   const deployedContracts = await import(`@kasplex/v3-core/deployments/${networkName}.json`)
   console.log('Deployed contracts:', deployedContracts)
-  // Verify PancakeV3PoolDeployer
-  console.log('Verify PancakeV3PoolDeployer')
+  // Verify KaspaFinanceV3PoolDeployer
+  console.log('Verify KaspaFinanceV3PoolDeployer')
   await verifyContract(deployedContracts.default.KaspaV3PoolDeployer)
   await sleep(10000)
 

@@ -1,6 +1,6 @@
 /* eslint-disable global-require */
 /* eslint-disable @typescript-eslint/no-var-requires */
-import type { HardhatUserConfig, NetworkUserConfig } from "hardhat/types";
+import type { NetworkUserConfig } from "hardhat/types";
 import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
@@ -14,30 +14,6 @@ import "dotenv/config";
 
 require("dotenv").config({ path: require("find-config")(".env") });
 
-const bscTestnet: NetworkUserConfig = {
-  url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
-  chainId: 97,
-  accounts: [process.env.KEY_TESTNET!],
-};
-
-const bscMainnet: NetworkUserConfig = {
-  url: "https://bsc-dataseed.binance.org/",
-  chainId: 56,
-  accounts: [process.env.KEY_MAINNET!],
-};
-
-const goerli: NetworkUserConfig = {
-  url: "https://rpc.ankr.com/eth_goerli",
-  chainId: 5,
-  accounts: [process.env.KEY_GOERLI!],
-};
-
-const eth: NetworkUserConfig = {
-  url: "https://eth.llamarpc.com",
-  chainId: 1,
-  accounts: [process.env.KEY_ETH!],
-};
-
 const kasplexTestnet: NetworkUserConfig = {
   url: "https://rpc.kasplextest.xyz",
   chainId: 167012,
@@ -48,18 +24,10 @@ const config = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {},
-    ...(process.env.KEY_TESTNET && { bscTestnet }),
-    ...(process.env.KEY_MAINNET && { bscMainnet }),
-    ...(process.env.KEY_GOERLI && { goerli }),
-    ...(process.env.KEY_ETH && { eth }),
     ...(process.env.KEY_KASPLEX_TESTNET && { kasplexTestnet }),
   },
   etherscan: {
     apiKey: {
-      bscTestnet: "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J",
-      bscMainnet: "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J",
-      goerli: "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J",
-      mainnet: "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J",
       kasplexTestnet: "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J",
     },
     customChains: [
@@ -67,8 +35,8 @@ const config = {
         network: "kasplexTestnet",
         chainId: 167012,
         urls: {
-          apiURL: "https://frontend.kasplextest.xyz/api",
-          browserURL: "https://frontend.kasplextest.xyz",
+          apiURL: "https://explorer.testnet.kasplextest.xyz/api",
+          browserURL: "https://explorer.testnet.kasplextest.xyz",
         },
       },
     ],
