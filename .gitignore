@@ -1,8 +1,13 @@
 node_modules/
 **/artifacts/
 **/cache/
+**/logs/
+**/out/
+**/cache_forge/
 **/typechain/
+**/out/
 **/typechain-types/
+typechain-types/
 **/data/abi
 **/abi
 **/coverage
@@ -13,5 +18,16 @@ node_modules/
 .DS_Store
 bytecode
 dist
+out
+logs
+
+# Old log files (scattered logs)
+*.log
+.registry_address_*
+
+# Keep logs/ directory structure but ignore log contents
+logs/**/*.log
+logs/**/.registry_address
+
 projects/masterchef-v3/abi/@openzeppelin/contracts/access/Ownable.sol/Ownable.json
 projects/router/test/debug.ts

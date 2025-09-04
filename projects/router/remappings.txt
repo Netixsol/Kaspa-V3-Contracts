@@ -1,0 +1,9 @@
+@uniswap/=../../node_modules/@uniswap/
+base64-sol/=../../node_modules/base64-sol/
+@openzeppelin/=../../node_modules/@openzeppelin/
+forge-std/=lib/forge-std/src/
+@kasplex/*=../*
+@kasplex/v3-core/=../v3-core/
+@kasplex/v3-periphery/=../v3-periphery/
+@kasplex/v3-lm-pool/=../v3-lm-pool/
+@kasplex/router/=../router/

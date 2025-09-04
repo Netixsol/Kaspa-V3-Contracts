@@ -1,0 +1,43 @@
+[profile.default]
+# This is a workspace configuration for multiple Foundry projects
+src = "shared"
+out = "out"
+libs = ["lib"]
+# Set EVM version to istanbul for compatibility with Kaspa network
+evm_version = "istanbul"
+optimizer = true
+optimizer_runs = 200
+
+# Shared remappings for all projects
+remappings = [
+    "@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/",
+    "forge-std/=lib/forge-std/src/",
+    "@kasplex/v3-core/=projects/v3-core/",
+    "@kasplex/v3-periphery/=projects/v3-periphery/", 
+    "@kasplex/router/=projects/router/",
+    "@kasplex/masterchef-v3/=projects/masterchef-v3/",
+    "@kasplex/v3-lm-pool/=projects/v3-lm-pool/",
+]
+
+# Network configurations (shared across all projects)
+[rpc_endpoints]
+kasplex_testnet = "https://rpc.kasplextest.xyz"
+kasplex_mainnet = "https://rpc.kasplextest.xyz"  # Update with mainnet RPC when available
+
+[etherscan]
+kasplex_testnet = { key = "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J", chainId = 167012, url = "https://explorer.testnet.kasplextest.xyz/api" }
+kasplex_mainnet = { key = "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J", chainId = 167012, url = "https://explorer.testnet.kasplextest.xyz/api" }
+
+# Profile for contracts using Solidity 0.7.6
+[profile.v0_7_6]
+solc_version = "0.7.6"
+evm_version = "istanbul"
+optimizer = true
+optimizer_runs = 200_000_000
+
+# Profile for contracts using Solidity 0.8.10
+[profile.v0_8_10]
+solc_version = "0.8.10"
+evm_version = "istanbul"
+optimizer = true
+optimizer_runs = 800_000

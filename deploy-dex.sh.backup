@@ -1,0 +1,607 @@
+#!/bin/bash
+
+# Deploy DEX Only Script
+# This script deploys v3-core, v3-periphery, and router
+# Usage: ./deploy-dex.sh [network]
+
+set -e
+source .env
+
+NETWORK=${1:-kasplex_testnet}
+
+# Set RPC URL based on network
+if [ "$NETWORK" = "kasplex_testnet" ]; then
+    RPC_URL="https://rpc.kasplextest.xyz"
+elif [ "$NETWORK" = "kasplex_mainnet" ]; then
+    RPC_URL="https://rpc.kasplextest.xyz"  # Update with mainnet RPC when available
+else
+    RPC_URL="$NETWORK"  # Allow direct RPC URL input
+fi
+
+# Color codesc
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[0;33m'
+NC='\033[0m'
+
+echo -e "${GREEN}=== Kaspa V3 DEX Deployment ===${NC}"
+echo "Network: $NETWORK"
+echo "RPC URL: $RPC_URL"
+echo ""
+
+# Check if PRIVATE_KEY is set
+if [ -z "$PRIVATE_KEY" ]; then
+    echo -e "${RED}Error: PRIVATE_KEY environment variable is not set${NC}"
+    echo "Please export your private key: export PRIVATE_KEY=your_private_key_here"
+    exit 1
+fi
+
+# Variables to store deployed addresses
+# Global constants
+WKAS="0xD18FCd278F7156DaA2a506dBC2A4a15337B91b94"
+
+# V3 Core contract addresses (set to deploy if empty)
+POOL_DEPLOYER_ADDRESS="0x77E61Fc70FB20A565BFb412efD3AA51B8F1f6036"
+FACTORY_ADDRESS="0xd96F8ed07C48805D6A34a884F66a86F79BF3B588"
+SET_FACTORY_IN_POOL_DEPLOYER=False
+
+# V3 Periphery contract addresses (set to deploy if empty)
+SWAP_ROUTER_ADDRESS="0x5C3d810Ce5b76a3C7bF675E395d2ea7263F8c06D"
+NFT_DESCRIPTOR_ADDRESS="0xf78cf8E6733f87bd9C1404280AD36a802fBeE4fb"
+NFT_DESCRIPTOR_EX_ADDRESS="0xdC2E068dED88B0624F6c35D59CC001643bed877E"
+POSITION_DESCRIPTOR_ADDRESS="0xD89E8bDf129aeb3A65177D5AB2a7D52108f89ff4"
+POSITION_MANAGER_ADDRESS="0xA23070F2813fa5fBbAe576436DE4F97d76293e5b"
+
+# Periphery Lens contracts (set to deploy if empty)
+QUOTER_V2_ADDRESS="0x7c78e50ae2873c9F01EBaDcaE5c6D971E8C3fc30"
+TICK_LENS_ADDRESS="0xe6242ADd5249a1a1aD0DB6DE18372B03F7f2218d"
+
+# Router contract addresses and libraries (set to deploy if empty)
+SMART_ROUTER_HELPER_ADDRESS="0xa071667BCe51B9bD367ab9cD6601C99A6DA1f1cA"
+SMART_ROUTER_ADDRESS=""
+
+# Create log directory (ensure it exists regardless of current working directory)
+LOG_DIR="logs/deployments/${NETWORK}"
+mkdir -p "$LOG_DIR" 2>/dev/null || true
+DEPLOYMENT_LOG="${LOG_DIR}/dex_deployment_${NETWORK}_$(date +%Y%m%d_%H%M%S).log"
+DEPLOYMENT_LOG_FROM_PROJECT="../../${LOG_DIR}/dex_deployment_${NETWORK}_$(date +%Y%m%d_%H%M%S).log"
+
+# Initialize log file with error handling
+if ! echo "DEX Deployment started at $(date)" > "$DEPLOYMENT_LOG" 2>/dev/null; then
+    # If we can't write to the log file, create it in current directory as fallback
+    DEPLOYMENT_LOG="dex_deployment_${NETWORK}_$(date +%Y%m%d_%H%M%S).log"
+    DEPLOYMENT_LOG_FROM_PROJECT="../dex_deployment_${NETWORK}_$(date +%Y%m%d_%H%M%S).log"
+    echo "DEX Deployment started at $(date)" > "$DEPLOYMENT_LOG"
+fi
+
+# Function to log messages with error handling
+log_message() {
+    local message="$1"
+    echo -e "$message"
+    # Try to append to log file, but don't fail if it doesn't work
+    echo -e "$message" >> "$DEPLOYMENT_LOG" 2>/dev/null || true
+}
+
+# Function to log messages from project subdirectories
+log_from_Project_message() {
+    local message="$1"
+    echo -e "$message"
+    # Try to append to log file, but don't fail if it doesn't work
+    echo -e "$message" >> "$DEPLOYMENT_LOG_FROM_PROJECT" 2>/dev/null || true
+}
+
+# Function to extract address from forge output
+extract_address() {
+    local output="$1"
+    echo "$output" | grep -o "Deployed to: 0x[a-fA-F0-9]*" | cut -d' ' -f3 | head -1
+}
+
+# Function to update contract address in the script file
+update_contract_address() {
+    local contract_var="$1"
+    local contract_address="$2"
+    local script_file
+    
+    # Validate inputs
+    if [ -z "$contract_var" ] || [ -z "$contract_address" ]; then
+        echo "Warning: Invalid parameters for update_contract_address: var='$contract_var' addr='$contract_address'"
+        return 1
+    fi
+    
+    # Check if this is a boolean value (True/False) or an address
+    if [ "$contract_address" = "True" ] || [ "$contract_address" = "False" ]; then
+        # This is a boolean value, don't try to extract an address
+        echo "Updating boolean value: ${contract_var} = ${contract_address}"
+    else
+        # Clean the address to ensure it's just the address
+        contract_address=$(echo "$contract_address" | grep -o "0x[a-fA-F0-9]\{40\}" | head -1)
+        if [ -z "$contract_address" ]; then
+            echo "Warning: Could not extract valid address from: $2"
+            return 1
+        fi
+    fi
+    
+    # Get the absolute path of the script file
+    if [ -f "$0" ]; then
+        script_file="$(realpath "$0")"
+    else
+        # If running from subdirectory, find the script in parent directories
+        local current_dir="$(pwd)"
+        while [ "$current_dir" != "/" ] && [ "$current_dir" != "" ]; do
+            if [ -f "$current_dir/deploy-dex.sh" ]; then
+                script_file="$current_dir/deploy-dex.sh"
+                break
+            fi
+            current_dir="$(dirname "$current_dir")"
+        done
+    fi
+    
+    if [ -z "$script_file" ] || [ ! -f "$script_file" ]; then
+        echo "Warning: Could not locate script file to update ${contract_var}"
+        return 1
+    fi
+    
+    # Create a backup of the script
+    cp "$script_file" "${script_file}.backup" 2>/dev/null || true
+    
+    # Use a simpler approach with awk to avoid sed delimiter issues
+    if echo "$2" | grep -q "^0x"; then
+        # For addresses, update both empty and existing values
+        awk -v var="$contract_var" -v addr="$contract_address" '
+        {
+            if ($0 ~ "^" var "=") {
+                print var "=\"" addr "\""
+            } else {
+                print $0
+            }
+        }' "$script_file" > "${script_file}.tmp" && mv "${script_file}.tmp" "$script_file"
+    else
+        # For boolean values and other non-address values, use the original value
+        awk -v var="$contract_var" -v val="$2" '
+        {
+            if ($0 ~ "^" var "=") {
+                print var "=" val
+            } else {
+                print $0
+            }
+        }' "$script_file" > "${script_file}.tmp" && mv "${script_file}.tmp" "$script_file"
+    fi
+    
+    echo "Updated ${contract_var} to ${2} in script"
+}
+
+# Function to execute command with retry logic
+execute_with_retry() {
+    local command="$1"
+    local description="$2"
+    local max_retries=3
+    local retry_count=0
+    
+    while [ $retry_count -le $max_retries ]; do
+        if [ $retry_count -gt 0 ]; then
+            log_from_Project_message "${YELLOW}Retry attempt $retry_count for $description...${NC}"
+            sleep 5  # Wait 5 seconds before retry
+        fi
+        
+        log_from_Project_message "Executing: $description..."
+        local output=$(eval "$command" 2>&1)
+        local exit_code=$?
+        
+        if [ $exit_code -eq 0 ]; then
+            log_from_Project_message "${GREEN}$description completed successfully${NC}"
+            echo "$output"
+            return 0
+        else
+            log_from_Project_message "${RED}$description failed (attempt $((retry_count + 1)))${NC}"
+            log_from_Project_message "${RED}Error output: $output${NC}"
+            echo "$output" >> "$DEPLOYMENT_LOG" 2>/dev/null || true
+            
+            # Check for specific error types and handle accordingly
+            if echo "$output" | grep -qi "insufficient funds"; then
+                log_from_Project_message "${RED}Error: Insufficient funds - please add more funds to wallet${NC}"
+                return 1  # Don't retry for insufficient funds
+            elif echo "$output" | grep -qi "already initialized\|already set"; then
+                log_from_Project_message "${GREEN}$description: Already initialized/set${NC}"
+                return 0  # Treat as success
+            elif echo "$output" | grep -qi "nonce too low\|nonce too high"; then
+                log_from_Project_message "${YELLOW}Nonce issue detected, waiting longer before retry...${NC}"
+                sleep 10  # Wait longer for nonce issues
+            elif echo "$output" | grep -qi "replacement transaction underpriced"; then
+                log_from_Project_message "${YELLOW}Transaction replacement issue, waiting before retry...${NC}"
+                sleep 15
+            fi
+        fi
+        
+        retry_count=$((retry_count + 1))
+        
+        if [ $retry_count -le $max_retries ]; then
+            log_from_Project_message "${YELLOW}Retrying $description...${NC}"
+        fi
+    done
+    
+    log_from_Project_message "${RED}$description failed after $((max_retries + 1)) attempts${NC}"
+    return 1
+}
+
+# Function to deploy contract with retry
+deploy_contract_with_retry() {
+    local contract_name="$1"
+    local contract_path="$2"
+    local constructor_args="$3"
+    local libraries="$4"
+    local profile="$5"
+    local max_retries=3
+    local retry_count=0
+    
+    while [ $retry_count -le $max_retries ]; do
+        if [ $retry_count -gt 0 ]; then
+            log_from_Project_message "${YELLOW}Retry attempt $retry_count for $contract_name deployment...${NC}"
+            sleep 5  # Wait 5 seconds before retry
+        fi
+        
+        local forge_cmd="FOUNDRY_PROFILE=${profile} forge create ${contract_path}"
+        forge_cmd="$forge_cmd --rpc-url \"$RPC_URL\""
+        forge_cmd="$forge_cmd --private-key \"$PRIVATE_KEY\""
+        forge_cmd="$forge_cmd --broadcast"
+        
+        if [ -n "$constructor_args" ]; then
+            forge_cmd="$forge_cmd --constructor-args $constructor_args"
+        fi
+        
+        if [ -n "$libraries" ]; then
+            forge_cmd="$forge_cmd --libraries \"$libraries\""
+        fi
+        
+        forge_cmd="$forge_cmd -vvv"
+        
+        log_from_Project_message "Deploying $contract_name (attempt $((retry_count + 1)))..."
+        local output=$(eval "$forge_cmd" 2>&1)
+        local exit_code=$?
+        
+        if [ $exit_code -eq 0 ]; then
+            local deployed_address=$(extract_address "$output")
+            if [ -n "$deployed_address" ] && [ ${#deployed_address} -eq 42 ]; then
+                log_from_Project_message "${GREEN}$contract_name deployed to: $deployed_address${NC}"
+                # Echo only the address, nothing else
+                printf "%s" "$deployed_address"
+                return 0
+            else
+                log_from_Project_message "${RED}Failed to extract address from deployment output for $contract_name${NC}"
+                log_from_Project_message "${RED}Deployment output: ${output:0:500}...${NC}"
+            fi
+        else
+            log_from_Project_message "${RED}Deployment failed for $contract_name (attempt $((retry_count + 1)))${NC}"
+            log_from_Project_message "${RED}Error output: ${output:0:500}...${NC}"
+            echo "$output" >> "$DEPLOYMENT_LOG" 2>/dev/null || true
+            
+            # Check for specific error types
+            if echo "$output" | grep -qi "insufficient funds"; then
+                log_from_Project_message "${RED}Error: Insufficient funds - please add more funds to wallet${NC}"
+                return 1  # Don't retry for insufficient funds
+            elif echo "$output" | grep -qi "nonce too low\|nonce too high"; then
+                log_from_Project_message "${YELLOW}Nonce issue detected, waiting longer before retry...${NC}"
+                sleep 10
+            elif echo "$output" | grep -qi "replacement transaction underpriced"; then
+                log_from_Project_message "${YELLOW}Transaction replacement issue, waiting before retry...${NC}"
+                sleep 15
+            fi
+        fi
+        
+        retry_count=$((retry_count + 1))
+        
+        if [ $retry_count -le $max_retries ]; then
+            log_from_Project_message "${YELLOW}Retrying deployment of $contract_name...${NC}"
+        fi
+    done
+    
+    log_from_Project_message "${RED}Failed to deploy $contract_name after $((max_retries + 1)) attempts${NC}"
+    return 1
+}
+
+# Simplified deployment function without registry
+deploy_contract() {
+    local contract_name="$1"
+    local contract_path="$2"
+    local constructor_args="$3"
+    local libraries="$4"
+    local profile="$5"
+    local address_var="$6"
+    
+    # Get current value of the address variable
+    local current_address
+    eval "current_address=\$$address_var"
+    
+    if [ -z "$current_address" ] || [ "$current_address" = "" ]; then
+        local deployed_address=$(deploy_contract_with_retry "$contract_name" "$contract_path" "$constructor_args" "$libraries" "$profile")
+        if [ $? -eq 0 ]; then
+            # Clean the address to ensure it's just the address
+            deployed_address=$(echo "$deployed_address" | grep -o "0x[a-fA-F0-9]\{40\}" | head -1)
+            if [ -n "$deployed_address" ] && [ ${#deployed_address} -eq 42 ]; then
+                eval "$address_var=\"$deployed_address\""
+                update_contract_address "$address_var" "$deployed_address"
+                log_from_Project_message "${GREEN}$contract_name deployed at: $deployed_address${NC}"
+            else
+                log_from_Project_message "${RED}Invalid $contract_name address: '$deployed_address'${NC}"
+                return 1
+            fi
+        else
+            return 1
+        fi
+    else
+        log_from_Project_message "${GREEN}$contract_name already deployed at: $current_address${NC}"
+    fi
+    return 0
+}
+
+
+# Add this section after deploying the factory in your deploy-dex.sh script
+# Step 1.5: Get and Verify Init Code Hash
+log_message "${BLUE}=== Step 1.5: Getting Init Code Hash ===${NC}"
+
+# Get the init code hash from the deployed pool bytecode
+INIT_CODE_HASH=$(cd projects/v3-core && FOUNDRY_PROFILE=minimal_size forge script scripts/computeV3InitCodeHash.ts --rpc-url "$RPC_URL" | grep "0x" | tail -1)
+
+if [ -z "$INIT_CODE_HASH" ]; then
+    log_message "${YELLOW}Computing init code hash from bytecode...${NC}"
+    INIT_CODE_HASH=$(cd projects/v3-core && node -e "
+    const { ethers } = require('hardhat');
+    const artifact = require('./artifacts/contracts/KaspaV3Pool.sol/KaspaV3Pool.json');
+    console.log(ethers.utils.keccak256(artifact.bytecode));
+    ")
+fi
+
+log_message "${GREEN}KaspaV3Pool Init Code Hash: $INIT_CODE_HASH${NC}"
+
+
+# Step 1: Deploy V3 Core Contracts
+log_message "${BLUE}=== Step 1: Deploying V3 Core Contracts ===${NC}"
+cd projects/v3-core
+
+# Deploy KaspaV3PoolDeployer using simplified function
+deploy_contract "KaspaV3PoolDeployer" "contracts/KaspaV3PoolDeployer.sol:KaspaV3PoolDeployer" "" "" "minimal_size" "POOL_DEPLOYER_ADDRESS" || exit 1
+
+# Deploy KaspaV3Factory using simplified function
+deploy_contract "KaspaV3Factory" "contracts/KaspaV3Factory.sol:KaspaV3Factory" "$POOL_DEPLOYER_ADDRESS" "" "minimal_size" "FACTORY_ADDRESS" || exit 1
+
+# Always attempt to set factory address in pool deployer with retry logic
+log_from_Project_message "Setting factory address in pool deployer..."
+SET_FACTORY_COMMAND="cast send \"$POOL_DEPLOYER_ADDRESS\" \"setFactoryAddress(address)\" \"$FACTORY_ADDRESS\" --rpc-url \"$RPC_URL\" --private-key \"$PRIVATE_KEY\""
+
+# Use execute_with_retry but handle "already initialized" error gracefully
+if execute_with_retry "$SET_FACTORY_COMMAND" "Setting factory address in pool deployer"; then
+    log_from_Project_message "${GREEN}Successfully set factory address in pool deployer${NC}"
+    SET_FACTORY_IN_POOL_DEPLOYER=False
+    update_contract_address "SET_FACTORY_IN_POOL_DEPLOYER" "False"
+else
+    # Check if it failed due to already being initialized
+    FACTORY_CHECK_OUTPUT=$(eval "$SET_FACTORY_COMMAND" 2>&1 || true)
+    if echo "$FACTORY_CHECK_OUTPUT" | grep -q "already initialized"; then
+        log_from_Project_message "${GREEN}Factory address already set in pool deployer${NC}"
+        SET_FACTORY_IN_POOL_DEPLOYER=False
+        update_contract_address "SET_FACTORY_IN_POOL_DEPLOYER" "False"
+    else
+        log_from_Project_message "${RED}Failed to set factory address in pool deployer${NC}"
+        exit 1
+    fi
+fi
+
+log_from_Project_message "${GREEN}V3 Core deployment completed${NC}"
+
+cd ../..
+
+# Step 2: Deploy V3 Periphery
+log_message "${BLUE}=== Step 2: Deploying V3 Periphery ===${NC}"
+cd projects/v3-periphery
+
+log_from_Project_message "Compiling v3-periphery..."
+
+# Deploy contracts using simplified functions without registry
+deploy_contract "SwapRouter" "contracts/SwapRouter.sol:SwapRouter" "$POOL_DEPLOYER_ADDRESS $FACTORY_ADDRESS $WKAS" "" "minimal_size" "SWAP_ROUTER_ADDRESS" || exit 1
+
+deploy_contract "NFTDescriptor" "contracts/libraries/NFTDescriptor.sol:NFTDescriptor" "" "" "lowest_optimizer" "NFT_DESCRIPTOR_ADDRESS" || exit 1
+
+deploy_contract "NFTDescriptorEx" "contracts/NFTDescriptorEx.sol:NFTDescriptorEx" "" "" "lowest_optimizer" "NFT_DESCRIPTOR_EX_ADDRESS" || exit 1
+
+# Deploy NonfungibleTokenPositionDescriptor with custom logic (requires libraries)
+if [ -z "$POSITION_DESCRIPTOR_ADDRESS" ] || [ "$POSITION_DESCRIPTOR_ADDRESS" = "" ]; then
+    ETH_BYTES="0x4554480000000000000000000000000000000000000000000000000000000000"
+    deploy_contract "NonfungibleTokenPositionDescriptor" "contracts/NonfungibleTokenPositionDescriptor.sol:NonfungibleTokenPositionDescriptor" "$WKAS $ETH_BYTES $NFT_DESCRIPTOR_EX_ADDRESS" "contracts/libraries/NFTDescriptor.sol:NFTDescriptor:$NFT_DESCRIPTOR_ADDRESS" "lowest_optimizer" "POSITION_DESCRIPTOR_ADDRESS" || exit 1
+else
+    log_from_Project_message "${GREEN}NonfungibleTokenPositionDescriptor already deployed at: $POSITION_DESCRIPTOR_ADDRESS${NC}"
+fi
+
+deploy_contract "NonfungiblePositionManager" "contracts/NonfungiblePositionManager.sol:NonfungiblePositionManager" "$POOL_DEPLOYER_ADDRESS $FACTORY_ADDRESS $WKAS $POSITION_DESCRIPTOR_ADDRESS" "" "low_optimizer" "POSITION_MANAGER_ADDRESS" || exit 1
+
+deploy_contract "QuoterV2" "contracts/lens/QuoterV2.sol:QuoterV2" "$POOL_DEPLOYER_ADDRESS $FACTORY_ADDRESS $WKAS" "" "minimal_size" "QUOTER_V2_ADDRESS" || exit 1
+
+deploy_contract "TickLens" "contracts/lens/TickLens.sol:TickLens" "" "" "minimal_size" "TICK_LENS_ADDRESS" || exit 1
+
+log_from_Project_message "${GREEN}V3 Periphery deployment completed${NC}"
+
+cd ../..
+
+# Step 3: Deploy Router
+log_message "${BLUE}=== Step 3: Deploying Router ===${NC}"
+cd projects/router
+
+log_from_Project_message "Compiling router..."
+
+# Deploy SmartRouter and its dependencies
+deploy_contract "SmartRouterHelper" "contracts/libraries/SmartRouterHelper.sol:SmartRouterHelper" "" "" "minimal_size" "SMART_ROUTER_HELPER_ADDRESS" || exit 1
+
+# Deploy SmartRouter with comprehensive retry and fallback logic
+if [ -z "$SMART_ROUTER_ADDRESS" ] || [ "$SMART_ROUTER_ADDRESS" = "" ]; then
+    log_from_Project_message "Compiling SmartRouter with SmartRouterHelper library..."
+    FOUNDRY_PROFILE=minimal_size forge build --force || {
+        log_from_Project_message "${RED}Failed to compile router${NC}"
+        exit 1
+    }
+
+    # Network-specific constants for SmartRouter
+    FACTORY_V2="0x0000000000000000000000000000000000000000"  # Not available
+    STABLE_FACTORY="0x0000000000000000000000000000000000000000"  # Not available
+    STABLE_INFO="0x0000000000000000000000000000000000000000"  # Not available
+
+    # Method 1: Try forge create with retry logic
+    log_from_Project_message "Method 1: Deploying SmartRouter with forge create..."
+    SMART_ROUTER_CMD="FOUNDRY_PROFILE=minimal_size forge create contracts/SmartRouter.sol:SmartRouter --rpc-url \"$RPC_URL\" --private-key \"$PRIVATE_KEY\" --gas-limit 8000000 --broadcast --libraries \"contracts/libraries/SmartRouterHelper.sol:SmartRouterHelper:$SMART_ROUTER_HELPER_ADDRESS\" --constructor-args \"$FACTORY_V2\" \"$POOL_DEPLOYER_ADDRESS\" \"$FACTORY_ADDRESS\" \"$POSITION_MANAGER_ADDRESS\" \"$STABLE_FACTORY\" \"$STABLE_INFO\" \"$WKAS\""
+    
+    SMART_ROUTER_OUTPUT=$(execute_with_retry "$SMART_ROUTER_CMD" "SmartRouter deployment")
+    DEPLOY_EXIT_CODE=$?
+    
+    if [ $DEPLOY_EXIT_CODE -eq 0 ]; then
+        SMART_ROUTER_DEPLOYED=$(extract_address "$SMART_ROUTER_OUTPUT")
+        if [ -n "$SMART_ROUTER_DEPLOYED" ] && [ ${#SMART_ROUTER_DEPLOYED} -eq 42 ]; then
+            SMART_ROUTER_ADDRESS="$SMART_ROUTER_DEPLOYED"
+            update_contract_address "SMART_ROUTER_ADDRESS" "$SMART_ROUTER_ADDRESS"
+            log_from_Project_message "${GREEN}SmartRouter deployed via Method 1 at: $SMART_ROUTER_ADDRESS${NC}"
+        else
+            log_from_Project_message "${YELLOW}Method 1: Could not extract SmartRouter address, trying Method 2...${NC}"
+            DEPLOY_EXIT_CODE=1  # Force fallback to Method 2
+        fi
+    fi
+    
+    # Method 2: Try bytecode deployment as fallback
+    if [ $DEPLOY_EXIT_CODE -ne 0 ]; then
+        log_from_Project_message "${YELLOW}Method 2: Trying bytecode deployment...${NC}"
+        
+        # Get the compiled bytecode
+        if [ ! -f "out/SmartRouter.sol/SmartRouter.json" ]; then
+            log_from_Project_message "${RED}SmartRouter.json not found, recompiling...${NC}"
+            FOUNDRY_PROFILE=minimal_size forge build --libraries "contracts/libraries/SmartRouterHelper.sol:SmartRouterHelper:$SMART_ROUTER_HELPER_ADDRESS" || {
+                log_from_Project_message "${RED}Failed to compile SmartRouter with libraries${NC}"
+                exit 1
+            }
+        fi
+        
+        # Extract bytecode
+        SMART_ROUTER_BYTECODE=$(grep -A1 '"bytecode"' "out/SmartRouter.sol/SmartRouter.json" | grep '"object"' | head -1 | sed 's/.*"object": *"\([^"]*\)".*/\1/')
+        
+        if [ -n "$SMART_ROUTER_BYTECODE" ] && [ "$SMART_ROUTER_BYTECODE" != "null" ]; then
+            # Validate bytecode format
+            if [[ ! "$SMART_ROUTER_BYTECODE" =~ ^0x ]]; then
+                SMART_ROUTER_BYTECODE="0x$SMART_ROUTER_BYTECODE"
+            fi
+            
+            log_from_Project_message "Bytecode extracted successfully (${#SMART_ROUTER_BYTECODE} characters)"
+            
+            # Encode constructor arguments
+            CONSTRUCTOR_DATA=$(cast abi-encode "constructor(address,address,address,address,address,address,address)" "$FACTORY_V2" "$POOL_DEPLOYER_ADDRESS" "$FACTORY_ADDRESS" "$POSITION_MANAGER_ADDRESS" "$STABLE_FACTORY" "$STABLE_INFO" "$WKAS")
+            
+            if [ $? -eq 0 ] && [ -n "$CONSTRUCTOR_DATA" ]; then
+                # Combine bytecode and constructor data
+                DEPLOYMENT_DATA="${SMART_ROUTER_BYTECODE}${CONSTRUCTOR_DATA#0x}"
+                
+                # Create temporary file for deployment data
+                TEMP_DEPLOY_FILE="temp_deploy_data.hex"
+                echo "$DEPLOYMENT_DATA" > "$TEMP_DEPLOY_FILE"
+                
+                if [ -f "$TEMP_DEPLOY_FILE" ]; then
+                    # Try deployment using cast send --create
+                    DEPLOYMENT_DATA_FROM_FILE=$(cat "$TEMP_DEPLOY_FILE")
+                    BYTECODE_DEPLOY_CMD="cast send --rpc-url \"$RPC_URL\" --private-key \"$PRIVATE_KEY\" --gas-limit 8000000 --legacy --create \"$DEPLOYMENT_DATA_FROM_FILE\""
+                    
+                    BYTECODE_DEPLOY_OUTPUT=$(execute_with_retry "$BYTECODE_DEPLOY_CMD" "SmartRouter bytecode deployment")
+                    BYTECODE_EXIT_CODE=$?
+                    
+                    # Clean up temporary file
+                    rm -f "$TEMP_DEPLOY_FILE" 2>/dev/null || true
+                    
+                    if [ $BYTECODE_EXIT_CODE -eq 0 ]; then
+                        # Try to extract transaction hash and get contract address
+                        DEPLOY_TX=$(echo "$BYTECODE_DEPLOY_OUTPUT" | grep -o "0x[a-fA-F0-9]\{64\}" | head -1)
+                        
+                        if [ -n "$DEPLOY_TX" ] && [ ${#DEPLOY_TX} -eq 66 ]; then
+                            log_from_Project_message "Transaction hash: $DEPLOY_TX"
+                            log_from_Project_message "Waiting for transaction to be mined..."
+                            sleep 8
+                            
+                            # Get contract address from transaction receipt
+                            SMART_ROUTER_DEPLOYED=$(cast receipt "$DEPLOY_TX" contractAddress --rpc-url "$RPC_URL" 2>/dev/null)
+                            
+                            if [ -n "$SMART_ROUTER_DEPLOYED" ] && [ "$SMART_ROUTER_DEPLOYED" != "null" ] && [ ${#SMART_ROUTER_DEPLOYED} -eq 42 ]; then
+                                SMART_ROUTER_ADDRESS="$SMART_ROUTER_DEPLOYED"
+                                update_contract_address "SMART_ROUTER_ADDRESS" "$SMART_ROUTER_ADDRESS"
+                                log_from_Project_message "${GREEN}SmartRouter deployed via Method 2 at: $SMART_ROUTER_ADDRESS${NC}"
+                                DEPLOY_EXIT_CODE=0
+                            else
+                                log_from_Project_message "${YELLOW}Method 2: Could not extract address from receipt, trying Method 3...${NC}"
+                            fi
+                        else
+                            log_from_Project_message "${YELLOW}Method 2: No transaction hash found, trying Method 3...${NC}"
+                        fi
+                    else
+                        log_from_Project_message "${YELLOW}Method 2: Bytecode deployment failed, trying Method 3...${NC}"
+                    fi
+                else
+                    log_from_Project_message "${YELLOW}Method 2: Could not create deployment file, trying Method 3...${NC}"
+                fi
+            else
+                log_from_Project_message "${YELLOW}Method 2: Constructor encoding failed, trying Method 3...${NC}"
+            fi
+        else
+            log_from_Project_message "${YELLOW}Method 2: Bytecode extraction failed, trying Method 3...${NC}"
+        fi
+    fi
+    
+    # Method 3: Try alternative forge create without gas limit as final fallback
+    if [ $DEPLOY_EXIT_CODE -ne 0 ]; then
+        log_from_Project_message "${YELLOW}Method 3: Trying forge create without gas limit...${NC}"
+        SMART_ROUTER_CMD_ALT="FOUNDRY_PROFILE=minimal_size forge create contracts/SmartRouter.sol:SmartRouter --rpc-url \"$RPC_URL\" --private-key \"$PRIVATE_KEY\" --broadcast --libraries \"contracts/libraries/SmartRouterHelper.sol:SmartRouterHelper:$SMART_ROUTER_HELPER_ADDRESS\" --constructor-args \"$FACTORY_V2\" \"$POOL_DEPLOYER_ADDRESS\" \"$FACTORY_ADDRESS\" \"$POSITION_MANAGER_ADDRESS\" \"$STABLE_FACTORY\" \"$STABLE_INFO\" \"$WKAS\""
+        
+        SMART_ROUTER_OUTPUT_ALT=$(execute_with_retry "$SMART_ROUTER_CMD_ALT" "SmartRouter deployment (no gas limit)")
+        ALT_EXIT_CODE=$?
+        
+        if [ $ALT_EXIT_CODE -eq 0 ]; then
+            SMART_ROUTER_DEPLOYED=$(extract_address "$SMART_ROUTER_OUTPUT_ALT")
+            if [ -n "$SMART_ROUTER_DEPLOYED" ] && [ ${#SMART_ROUTER_DEPLOYED} -eq 42 ]; then
+                SMART_ROUTER_ADDRESS="$SMART_ROUTER_DEPLOYED"
+                update_contract_address "SMART_ROUTER_ADDRESS" "$SMART_ROUTER_ADDRESS"
+                log_from_Project_message "${GREEN}SmartRouter deployed via Method 3 at: $SMART_ROUTER_ADDRESS${NC}"
+                DEPLOY_EXIT_CODE=0
+            else
+                log_from_Project_message "${RED}Method 3: Could not extract SmartRouter address${NC}"
+            fi
+        else
+            log_from_Project_message "${RED}Method 3: Alternative forge create also failed${NC}"
+        fi
+    fi
+    
+    # Final check
+    if [ $DEPLOY_EXIT_CODE -ne 0 ] || [ -z "$SMART_ROUTER_ADDRESS" ]; then
+        log_from_Project_message "${RED}All SmartRouter deployment methods failed${NC}"
+        log_from_Project_message "${RED}Please check network connectivity, gas settings, and wallet balance${NC}"
+        exit 1
+    fi
+else
+    log_from_Project_message "${GREEN}SmartRouter already deployed at: $SMART_ROUTER_ADDRESS${NC}"
+fi
+
+
+log_from_Project_message "${GREEN}Router deployment completed${NC}"
+
+cd ../..
+
+# Step 4: Deployment Summary
+log_message "${BLUE}=== Step 4: Deployment Summary ===${NC}"
+
+log_message "${GREEN}=== DEX Deployment Complete ===${NC}"
+log_message "${BLUE}Deployed Contract Addresses:${NC}"
+log_message "WKAS: $WKAS"
+log_message "KaspaV3PoolDeployer: $POOL_DEPLOYER_ADDRESS"  
+log_message "KaspaV3Factory: $FACTORY_ADDRESS"
+log_message "SwapRouter: $SWAP_ROUTER_ADDRESS"
+log_message "NFTDescriptor: $NFT_DESCRIPTOR_ADDRESS"
+log_message "NFTDescriptorEx: $NFT_DESCRIPTOR_EX_ADDRESS" 
+log_message "NonfungibleTokenPositionDescriptor: $POSITION_DESCRIPTOR_ADDRESS"
+log_message "NonfungiblePositionManager: $POSITION_MANAGER_ADDRESS"
+log_message "QuoterV2: $QUOTER_V2_ADDRESS"
+log_message "TickLens: $TICK_LENS_ADDRESS"
+log_message "SmartRouterHelper: $SMART_ROUTER_HELPER_ADDRESS"
+log_message "SmartRouter: $SMART_ROUTER_ADDRESS"
+log_message "${BLUE}Deployment log saved to: $DEPLOYMENT_LOG${NC}"
+
+echo ""
+log_message "${GREEN}✅ DEX deployment successful!${NC}"
+log_message "${BLUE}All contract addresses are now updated in this script for future deployments${NC}"

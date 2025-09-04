@@ -1,0 +1,47 @@
+[profile.default]
+src = "contracts"
+out = "artifacts/foundry"
+libs = ["node_modules", "../v3-core/lib", "../../node_modules"]
+test = "test/foundry"
+cache_path = "cache_forge"
+
+# Solidity compiler settings
+solc = "0.8.10"
+optimizer = true
+optimizer_runs = 999
+via_ir = false
+
+# EVM version
+evm_version = "istanbul"
+
+# Additional settings
+auto_detect_solc = false
+offline = false
+# Remappings
+remappings = [
+    "forge-std/=lib/forge-std/src/",
+    "@chainlink/=../../node_modules/@chainlink/",
+    "@uniswap/=../../node_modules/@uniswap/",
+    "@kasplex/v3-core/contracts/libraries/FullMath.sol=contracts/libraries/v3-core/FullMath.sol",
+    "@kasplex/v3-core/=../v3-core/",
+    "@kasplex/v3-periphery/=../v3-periphery/",
+    "@kasplex/v3-lm-pool/=../v3-lm-pool/",
+    "@kasplex/router/=../router/",
+]
+
+# Override for v3-core contracts that use 0.7.6
+[profile.default.model_checker]
+contracts = {}
+
+# Specific overrides for different Solidity versions
+[profile.default.optimizer_details]
+yul = true
+
+# Handle multiple Solidity versions
+[[profile.default.solc_version]]
+version = "0.8.10"
+contracts = ["contracts/**/*.sol"]
+
+[[profile.default.solc_version]]
+version = "0.7.6" 
+contracts = ["../v3-core/contracts/**/*.sol", "../v3-periphery/contracts/**/*.sol", "../v3-lm-pool/contracts/**/*.sol"]

@@ -1,5 +1,7 @@
 artifacts/
 cache/
+cache_forge
 crytic-export/
 node_modules/
 typechain/
+out/

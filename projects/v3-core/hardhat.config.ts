@@ -42,6 +42,7 @@ const kasplexTestnet: NetworkUserConfig = {
   chainId: 167012,
   accounts: [process.env.PRIVATE_KEY!],
 }
+
 const config = {
   networks: {
     hardhat: {

@@ -36,8 +36,8 @@ async function main() {
   ])
   await sleep(10000)
 
-  // Verify pancakeInterfaceMulticall
-  console.log('Verify pancakeInterfaceMulticall')
+  // Verify kaspaInterfaceMulticall
+  console.log('Verify kaspaInterfaceMulticall')
   await verifyContract(deployedContracts_v3_periphery.KaspaInterfaceMulticall)
   await sleep(10000)
 

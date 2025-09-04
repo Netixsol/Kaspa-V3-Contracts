@@ -7,5 +7,6 @@ typechain-types
 
 # Hardhat files
 cache
+cache_forge
 artifacts
-
+out/

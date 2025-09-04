@@ -6,8 +6,8 @@
     {
       "inputs": [
         {
-          "internalType": "contract CakeToken",
-          "name": "_cake",
+          "internalType": "contract KFCToken",
+          "name": "_kfc",
           "type": "address"
         },
         {
@@ -22,7 +22,7 @@
         },
         {
           "internalType": "uint256",
-          "name": "_cakePerBlock",
+          "name": "_kfcPerBlock",
           "type": "uint256"
         },
         {
@@ -166,10 +166,10 @@
     },
     {
       "inputs": [],
-      "name": "cake",
+      "name": "kfc",
       "outputs": [
         {
-          "internalType": "contract CakeToken",
+          "internalType": "contract KFCToken",
           "name": "",
           "type": "address"
         }
@@ -179,7 +179,7 @@
     },
     {
       "inputs": [],
-      "name": "cakePerBlock",
+      "name": "kfcPerBlock",
       "outputs": [
         {
           "internalType": "uint256",
@@ -356,7 +356,7 @@
           "type": "address"
         }
       ],
-      "name": "pendingCake",
+      "name": "pendingKFC",
       "outputs": [
         {
           "internalType": "uint256",
@@ -394,7 +394,7 @@
         },
         {
           "internalType": "uint256",
-          "name": "accCakePerShare",
+          "name": "accKFCPerShare",
           "type": "uint256"
         }
       ],

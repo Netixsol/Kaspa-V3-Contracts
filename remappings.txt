@@ -1,0 +1,7 @@
+@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/
+forge-std/=lib/forge-std/src/
+@kasplex/v3-core/=projects/v3-core/
+@kasplex/v3-periphery/=projects/v3-periphery/
+@kasplex/router/=projects/router/
+@kasplex/masterchef-v3/=projects/masterchef-v3/
+@kasplex/v3-lm-pool/=projects/v3-lm-pool/

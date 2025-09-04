@@ -1,0 +1,37 @@
+[profile.default]
+src = "contracts"
+out = "artifacts/foundry"
+libs = ["node_modules", "../v3-core/lib"]
+test = "test/foundry"
+cache_path = "cache_forge"
+allow_paths = ["../../node_modules", "../v3-core", "../v3-periphery", "../router", "../masterchef-v3"]
+
+# Solidity compiler settings (matching v3-core)
+solc = "0.7.6"
+optimizer = true
+optimizer_runs = 200000000
+via_ir = false
+
+# EVM version
+evm_version = "istanbul"
+
+# Additional settings
+auto_detect_solc = false
+offline = false
+remappings = [
+    "@kasplex/=../",
+    "@openzeppelin/=node_modules/@openzeppelin/",
+    "@uniswap/=node_modules/@uniswap/"
+]
+
+# Bytecode hash setting (matching v3-core hardhat config)
+[profile.default.metadata]
+bytecode_hash = "none"
+
+# Model checker settings
+[profile.default.model_checker]
+contracts = {}
+
+# Optimizer details
+[profile.default.optimizer_details]
+yul = true
