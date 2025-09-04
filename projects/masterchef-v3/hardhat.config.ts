@@ -19,16 +19,25 @@ const kasplexTestnet: NetworkUserConfig = {
   chainId: 167012,
   accounts: [process.env.PRIVATE_KEY!],
 };
+const igraCaravel: NetworkUserConfig = {
+  url: "https://caravel.igralabs.com:8545",
+  chainId: 19416,
+  accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+  gasPrice: 2000000000000, // 2000 Gwei - minimum required by Igra network
+  gas: 2100000,
+};
 
 const config = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {},
     ...(process.env.KEY_KASPLEX_TESTNET && { kasplexTestnet }),
+    ...(process.env.KEY_KASPLEX_TESTNET && { igraCaravel }),
   },
   etherscan: {
     apiKey: {
       kasplexTestnet: "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J",
+      igraCaravel: "MNNUYHJNPKZN5BIGCC4K8IH9PA9TB68G5J",
     },
     customChains: [
       {
@@ -37,6 +46,14 @@ const config = {
         urls: {
           apiURL: "https://explorer.testnet.kasplextest.xyz/api",
           browserURL: "https://explorer.testnet.kasplextest.xyz",
+        },
+      },
+      {
+        network: "igraCaravel",
+        chainId: 19416,
+        urls: {
+          apiURL: "https://explorer.caravel.igralabs.com/api",
+          browserURL: "https://explorer.caravel.igralabs.com",
         },
       },
     ],
