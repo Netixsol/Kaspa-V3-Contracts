@@ -6,8 +6,8 @@
     {
       "inputs": [
         {
-          "internalType": "contract CakeToken",
-          "name": "_cake",
+          "internalType": "contract KFCToken",
+          "name": "_kfc",
           "type": "address"
         }
       ],
@@ -246,10 +246,10 @@
     },
     {
       "inputs": [],
-      "name": "cake",
+      "name": "kfc",
       "outputs": [
         {
-          "internalType": "contract CakeToken",
+          "internalType": "contract KFCToken",
           "name": "",
           "type": "address"
         }
@@ -594,7 +594,7 @@
           "type": "uint256"
         }
       ],
-      "name": "safeCakeTransfer",
+      "name": "safeKFCTransfer",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

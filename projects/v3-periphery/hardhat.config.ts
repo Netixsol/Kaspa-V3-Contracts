@@ -15,7 +15,7 @@ const LOW_OPTIMIZER_COMPILER_SETTINGS = {
     evmVersion: 'istanbul',
     optimizer: {
       enabled: true,
-      runs: 2_000,
+      runs: 200,
     },
     metadata: {
       bytecodeHash: 'none',
@@ -70,20 +70,22 @@ const kasplexTestnet: NetworkUserConfig = {
   accounts: [process.env.PRIVATE_KEY!],
 }
 const igraCaravel: NetworkUserConfig = {
-  url: "https://caravel.igralabs.com:8545",
+  url: 'https://caravel.igralabs.com:8545',
   chainId: 19416,
   accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
   gasPrice: 2000000000000, // 2000 Gwei - minimum required by Igra network
-  gas: 2100000,
-};
+  gas: 8000000, // Increased gas limit for large contracts
+  blockGasLimit: 10000000, // Set block gas limit
+  allowUnlimitedContractSize: true, // Allow large contracts
+}
 
 export default {
   networks: {
     hardhat: {
       allowUnlimitedContractSize: true,
     },
-    ...(process.env.KEY_KASPLEX_TESTNET && { kasplexTestnet }),
-    ...(process.env.KEY_KASPLEX_TESTNET && { igraCaravel }),
+    kasplexTestnet,
+    igraCaravel,
   },
   etherscan: {
     apiKey: {

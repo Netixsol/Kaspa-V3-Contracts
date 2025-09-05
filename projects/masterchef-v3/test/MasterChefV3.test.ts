@@ -13,7 +13,7 @@ import KaspaV3LmPoolDeployerArtifact from "@kasplex/v3-lm-pool/artifacts/contrac
 import TestLiquidityAmountsArtifact from "@kasplex/v3-periphery/artifacts/contracts/test/LiquidityAmountsTest.sol/LiquidityAmountsTest.json";
 
 import ERC20MockArtifact from "./ERC20Mock.json";
-import CakeTokenArtifact from "./CakeToken.json";
+import KFCTokenArtifact from "./KFCToken.json";
 import SyrupBarArtifact from "./SyrupBar.json";
 import MasterChefArtifact from "./MasterChef.json";
 import MasterChefV2Artifact from "./MasterChefV2.json";
@@ -80,32 +80,32 @@ describe("MasterChefV3", function () {
     // await KaspaV3Factory.setOwner(KaspaV3FactoryOwner.address);
 
     // Prepare for master chef v3
-    const CakeToken = await ethers.getContractFactoryFromArtifact(CakeTokenArtifact);
-    const cakeToken = await CakeToken.deploy();
+    const KFCToken = await ethers.getContractFactoryFromArtifact(KFCTokenArtifact);
+    const kfcToken = await KFCToken.deploy();
 
     const SyrupBar = await ethers.getContractFactoryFromArtifact(SyrupBarArtifact);
-    const syrupBar = await SyrupBar.deploy(cakeToken.address);
+    const syrupBar = await SyrupBar.deploy(kfcToken.address);
 
     const lpTokenV1 = await ERC20Mock.deploy("LP Token V1", "LPV1");
     const dummyTokenV2 = await ERC20Mock.deploy("Dummy Token V2", "DTV2");
 
     const MasterChef = await ethers.getContractFactoryFromArtifact(MasterChefArtifact);
     const masterChef = await MasterChef.deploy(
-      cakeToken.address,
+      kfcToken.address,
       syrupBar.address,
       admin.address,
       ethers.utils.parseUnits("40"),
       ethers.constants.Zero
     );
 
-    await cakeToken.transferOwnership(masterChef.address);
+    await kfcToken.transferOwnership(masterChef.address);
     await syrupBar.transferOwnership(masterChef.address);
 
     await masterChef.add(0, lpTokenV1.address, true); // farm with pid 1 and 0 allocPoint
     await masterChef.add(1, dummyTokenV2.address, true); // farm with pid 2 and 1 allocPoint
 
     const MasterChefV2 = await ethers.getContractFactoryFromArtifact(MasterChefV2Artifact);
-    const masterChefV2 = await MasterChefV2.deploy(masterChef.address, cakeToken.address, 2, admin.address);
+    const masterChefV2 = await MasterChefV2.deploy(masterChef.address, kfcToken.address, 2, admin.address);
 
     const MockBoost = await ethers.getContractFactoryFromArtifact(MockBoostArtifact);
     const mockBoost = await MockBoost.deploy(masterChefV2.address);
@@ -122,7 +122,7 @@ describe("MasterChefV3", function () {
 
     // Deploy master chef v3
     const MasterChefV3 = await ethers.getContractFactory("MasterChefV3");
-    const masterChefV3 = await MasterChefV3.deploy(cakeToken.address, nonfungiblePositionManager.address, WETH9Address);
+    const masterChefV3 = await MasterChefV3.deploy(kfcToken.address, nonfungiblePositionManager.address, WETH9Address);
 
     await dummyTokenV3.mint(admin.address, ethers.utils.parseUnits("1000"));
     await dummyTokenV3.approve(masterChefV2.address, ethers.constants.MaxUint256);
@@ -213,12 +213,12 @@ describe("MasterChefV3", function () {
     // Farm 1 month in advance and then upkeep
     await mineUpTo(firstFarmingBlock + 30 * 24 * 60 * 60);
     await masterChefV2.connect(admin).deposit(1, 0);
-    // const cakeFarmed = await cakeToken.balanceOf(admin.address);
-    // console.log(`${ethers.utils.formatUnits(cakeFarmed)} CAKE farmed`);
-    await cakeToken.approve(masterChefV3.address, ethers.constants.MaxUint256);
+    // const kfcFarmed = await kfcToken.balanceOf(admin.address);
+    // console.log(`${ethers.utils.formatUnits(kfcFarmed)} KFC farmed`);
+    await kfcToken.approve(masterChefV3.address, ethers.constants.MaxUint256);
     await masterChefV3.setReceiver(admin.address);
     await masterChefV3.upkeep(ethers.utils.parseUnits(`${4 * 24 * 60 * 60}`), 24 * 60 * 60, true);
-    // console.log(`cakePerSecond: ${ethers.utils.formatUnits((await masterChefV3.latestPeriodCakePerSecond()).div(await masterChefV3.PRECISION()))}\n`);
+    // console.log(`kfcPerSecond: ${ethers.utils.formatUnits((await masterChefV3.latestPeriodKFCPerSecond()).div(await masterChefV3.PRECISION()))}\n`);
 
     const LiquidityAmounts = await ethers.getContractFactoryFromArtifact(TestLiquidityAmountsArtifact);
     const liquidityAmounts = await LiquidityAmounts.deploy();
@@ -227,7 +227,7 @@ describe("MasterChefV3", function () {
     this.masterChefV3 = masterChefV3;
     this.pools = pools;
     this.poolAddresses = poolAddresses;
-    this.cakeToken = cakeToken;
+    this.kfcToken = kfcToken;
     this.liquidityAmounts = liquidityAmounts;
     this.swapRouter = kaspaV3SwapRouter;
 
@@ -300,13 +300,13 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        let cakeUser1;
-        let cakeUser2;
+        let kfcUser1;
+        let kfcUser2;
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
 
         console.log("@5 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
         console.log("");
 
         // 6
@@ -331,12 +331,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@6 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
         console.log("");
 
         // 7
@@ -344,14 +344,14 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(3));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(3));
 
         console.log("@7 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 8
@@ -376,16 +376,16 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4));
 
         console.log("@8 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 9
@@ -395,16 +395,16 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4));
 
         console.log("@9 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 10
@@ -412,16 +412,16 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4));
 
         console.log("@10 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 11
@@ -429,16 +429,16 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4));
 
         console.log("@11 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 12
@@ -446,16 +446,16 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4));
 
         console.log("@12 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 13
@@ -463,16 +463,16 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4));
 
         console.log("@13 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 14
@@ -489,16 +489,16 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4));
 
         console.log("@14 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 15
@@ -508,16 +508,16 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4));
 
         console.log("@15 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 16
@@ -527,16 +527,16 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4));
 
         console.log("@16 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 17
@@ -558,16 +558,16 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4));
 
         console.log("@17 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 18
@@ -592,17 +592,17 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4));
 
         console.log("@18 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 19
@@ -612,17 +612,17 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4));
 
         console.log("@19 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 20
@@ -632,17 +632,17 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4));
 
         console.log("@20 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 21
@@ -652,17 +652,17 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4));
 
         console.log("@21 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 22
@@ -672,17 +672,17 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4));
 
         console.log("@22 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 23
@@ -692,17 +692,17 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4));
 
         console.log("@23 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 24
@@ -727,18 +727,18 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6));
 
         console.log("@24 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 25
@@ -763,19 +763,19 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6));
 
         console.log("@25 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 26
@@ -800,20 +800,20 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6));
 
         console.log("@26 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 27
@@ -821,20 +821,20 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6));
 
         console.log("@27 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 28
@@ -859,21 +859,21 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@28 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 29
@@ -883,21 +883,21 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@29 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 30
@@ -905,21 +905,21 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@30 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 31
@@ -927,21 +927,21 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@31 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 32
@@ -949,21 +949,21 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@32 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 33
@@ -980,21 +980,21 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@33 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 34
@@ -1002,21 +1002,21 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@34 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 35
@@ -1038,21 +1038,21 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@35 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 36
@@ -1060,21 +1060,21 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@36 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 37
@@ -1091,21 +1091,21 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@37 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 38
@@ -1115,21 +1115,21 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@38 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 39
@@ -1139,21 +1139,21 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@39 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 40
@@ -1161,21 +1161,21 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@40 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 41
@@ -1197,21 +1197,21 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@41 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 42
@@ -1219,21 +1219,21 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@42 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 43
@@ -1241,21 +1241,21 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@43 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 44
@@ -1280,22 +1280,22 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8))
-          .add(await this.masterChefV3.pendingCake(10));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8))
+          .add(await this.masterChefV3.pendingKFC(10));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@44 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 45
@@ -1305,22 +1305,22 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8))
-          .add(await this.masterChefV3.pendingCake(10));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8))
+          .add(await this.masterChefV3.pendingKFC(10));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9));
 
         console.log("@45 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 46
@@ -1345,23 +1345,23 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8))
-          .add(await this.masterChefV3.pendingCake(10));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9))
-          .add(await this.masterChefV3.pendingCake(11));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8))
+          .add(await this.masterChefV3.pendingKFC(10));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9))
+          .add(await this.masterChefV3.pendingKFC(11));
 
         console.log("@46 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 47
@@ -1369,23 +1369,23 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8))
-          .add(await this.masterChefV3.pendingCake(10));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9))
-          .add(await this.masterChefV3.pendingCake(11));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8))
+          .add(await this.masterChefV3.pendingKFC(10));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9))
+          .add(await this.masterChefV3.pendingKFC(11));
 
         console.log("@47 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 48
@@ -1393,23 +1393,23 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8))
-          .add(await this.masterChefV3.pendingCake(10));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9))
-          .add(await this.masterChefV3.pendingCake(11));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8))
+          .add(await this.masterChefV3.pendingKFC(10));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9))
+          .add(await this.masterChefV3.pendingKFC(11));
 
         console.log("@48 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 49
@@ -1417,23 +1417,23 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8))
-          .add(await this.masterChefV3.pendingCake(10));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9))
-          .add(await this.masterChefV3.pendingCake(11));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8))
+          .add(await this.masterChefV3.pendingKFC(10));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9))
+          .add(await this.masterChefV3.pendingKFC(11));
 
         console.log("@49 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 50
@@ -1441,23 +1441,23 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8))
-          .add(await this.masterChefV3.pendingCake(10));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9))
-          .add(await this.masterChefV3.pendingCake(11));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8))
+          .add(await this.masterChefV3.pendingKFC(10));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9))
+          .add(await this.masterChefV3.pendingKFC(11));
 
         console.log("@50 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 51
@@ -1465,23 +1465,23 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8))
-          .add(await this.masterChefV3.pendingCake(10));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9))
-          .add(await this.masterChefV3.pendingCake(11));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8))
+          .add(await this.masterChefV3.pendingKFC(10));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9))
+          .add(await this.masterChefV3.pendingKFC(11));
 
         console.log("@51 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 52
@@ -1489,23 +1489,23 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8))
-          .add(await this.masterChefV3.pendingCake(10));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9))
-          .add(await this.masterChefV3.pendingCake(11));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8))
+          .add(await this.masterChefV3.pendingKFC(10));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9))
+          .add(await this.masterChefV3.pendingKFC(11));
 
         console.log("@52 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 53
@@ -1513,27 +1513,27 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address))
-          .add(await this.masterChefV3.pendingCake(1))
-          .add(await this.masterChefV3.pendingCake(2))
-          .add(await this.masterChefV3.pendingCake(5))
-          .add(await this.masterChefV3.pendingCake(7))
-          .add(await this.masterChefV3.pendingCake(8))
-          .add(await this.masterChefV3.pendingCake(10));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address))
-          .add(await this.masterChefV3.pendingCake(3))
-          .add(await this.masterChefV3.pendingCake(4))
-          .add(await this.masterChefV3.pendingCake(6))
-          .add(await this.masterChefV3.pendingCake(9))
-          .add(await this.masterChefV3.pendingCake(11));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address))
+          .add(await this.masterChefV3.pendingKFC(1))
+          .add(await this.masterChefV3.pendingKFC(2))
+          .add(await this.masterChefV3.pendingKFC(5))
+          .add(await this.masterChefV3.pendingKFC(7))
+          .add(await this.masterChefV3.pendingKFC(8))
+          .add(await this.masterChefV3.pendingKFC(10));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address))
+          .add(await this.masterChefV3.pendingKFC(3))
+          .add(await this.masterChefV3.pendingKFC(4))
+          .add(await this.masterChefV3.pendingKFC(6))
+          .add(await this.masterChefV3.pendingKFC(9))
+          .add(await this.masterChefV3.pendingKFC(11));
 
         console.log("@53 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
-        assert(cakeUser1.sub(ethers.utils.parseUnits("57.68974359")).abs().lte(ethers.utils.parseUnits("0.1")));
-        assert(cakeUser2.sub(ethers.utils.parseUnits("105.3102564")).abs().lte(ethers.utils.parseUnits("0.1")));
+        assert(kfcUser1.sub(ethers.utils.parseUnits("57.68974359")).abs().lte(ethers.utils.parseUnits("0.1")));
+        assert(kfcUser2.sub(ethers.utils.parseUnits("105.3102564")).abs().lte(ethers.utils.parseUnits("0.1")));
       });
     });
 
@@ -1579,13 +1579,13 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        let cakeUser1;
-        let cakeUser2;
+        let kfcUser1;
+        let kfcUser2;
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
 
         console.log("@5 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
         console.log("");
 
         // 6
@@ -1610,10 +1610,10 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
 
         console.log("@6 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
         console.log("");
 
         // 7
@@ -1621,12 +1621,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@7 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 8
@@ -1634,12 +1634,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@8 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 9
@@ -1647,12 +1647,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@9 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 10
@@ -1660,12 +1660,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@10 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 11
@@ -1673,12 +1673,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@11 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 12
@@ -1686,12 +1686,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@12 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 13
@@ -1699,12 +1699,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@13 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 14
@@ -1712,12 +1712,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@14 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 15
@@ -1725,12 +1725,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@15 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 16
@@ -1738,12 +1738,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@16 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 17
@@ -1751,12 +1751,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@17 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 18
@@ -1764,12 +1764,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@18 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 19
@@ -1777,12 +1777,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@19 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 20
@@ -1790,12 +1790,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@20 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 21
@@ -1803,12 +1803,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@21 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 22
@@ -1816,12 +1816,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@22 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 23
@@ -1829,12 +1829,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@23 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 24
@@ -1842,12 +1842,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@24 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 25
@@ -1855,12 +1855,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@25 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 26
@@ -1868,12 +1868,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@26 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 27
@@ -1881,12 +1881,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@27 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 28
@@ -1894,12 +1894,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@28 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 29
@@ -1907,12 +1907,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@29 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 30
@@ -1920,12 +1920,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@30 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 31
@@ -1933,12 +1933,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@31 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 32
@@ -1946,12 +1946,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@32 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 33
@@ -1959,12 +1959,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@33 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 34
@@ -1972,12 +1972,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@34 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 35
@@ -1985,12 +1985,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@35 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 36
@@ -1998,12 +1998,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@36 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 37
@@ -2011,12 +2011,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@37 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 38
@@ -2024,12 +2024,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@38 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 39
@@ -2037,12 +2037,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@39 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 40
@@ -2050,12 +2050,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@40 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 41
@@ -2063,12 +2063,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@41 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 42
@@ -2076,12 +2076,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@42 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 43
@@ -2089,12 +2089,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@43 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 44
@@ -2102,12 +2102,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@44 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 45
@@ -2115,12 +2115,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@45 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 46
@@ -2128,12 +2128,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@46 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 47
@@ -2141,12 +2141,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@47 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 48
@@ -2154,12 +2154,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@48 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 49
@@ -2167,12 +2167,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@49 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 50
@@ -2180,12 +2180,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@50 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 51
@@ -2193,12 +2193,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@51 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 52
@@ -2206,12 +2206,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@52 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 53
@@ -2219,16 +2219,16 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@53 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
-        assert(cakeUser1.sub(ethers.utils.parseUnits("28.73260345")).abs().lte(ethers.utils.parseUnits("0.0000001")));
-        assert(cakeUser2.sub(ethers.utils.parseUnits("167.2673966")).abs().lte(ethers.utils.parseUnits("0.0000001")));
+        assert(kfcUser1.sub(ethers.utils.parseUnits("28.73260345")).abs().lte(ethers.utils.parseUnits("0.0000001")));
+        assert(kfcUser2.sub(ethers.utils.parseUnits("167.2673966")).abs().lte(ethers.utils.parseUnits("0.0000001")));
       });
     });
 
@@ -2274,13 +2274,13 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        let cakeUser1;
-        let cakeUser2;
+        let kfcUser1;
+        let kfcUser2;
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
 
         console.log("@5 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
         console.log("");
 
         // 6
@@ -2305,10 +2305,10 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
 
         console.log("@6 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
         console.log("");
 
         // 7
@@ -2327,12 +2327,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@7 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 8
@@ -2349,12 +2349,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@8 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 9
@@ -2373,12 +2373,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@9 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 10
@@ -2386,12 +2386,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@10 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 11
@@ -2399,12 +2399,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@11 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 12
@@ -2412,12 +2412,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@12 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 13
@@ -2425,12 +2425,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@13 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 14
@@ -2438,12 +2438,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@14 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 15
@@ -2451,12 +2451,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@15 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 16
@@ -2464,12 +2464,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@16 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 17
@@ -2477,12 +2477,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@17 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 18
@@ -2490,12 +2490,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@18 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 19
@@ -2503,12 +2503,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@19 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 20
@@ -2527,12 +2527,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@20 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 21
@@ -2549,12 +2549,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@21 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 22
@@ -2562,12 +2562,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@22 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 23
@@ -2575,12 +2575,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@23 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 24
@@ -2588,12 +2588,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@24 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 25
@@ -2601,12 +2601,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@25 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 26
@@ -2614,12 +2614,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@26 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 27
@@ -2627,12 +2627,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@27 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 28
@@ -2640,12 +2640,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@28 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 29
@@ -2653,12 +2653,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@29 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 30
@@ -2675,12 +2675,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@30 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 31
@@ -2688,12 +2688,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@31 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 32
@@ -2701,12 +2701,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@32 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 33
@@ -2714,12 +2714,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@33 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 34
@@ -2727,12 +2727,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@34 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 35
@@ -2740,12 +2740,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@35 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 36
@@ -2753,12 +2753,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@36 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 37
@@ -2766,12 +2766,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@37 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 38
@@ -2779,12 +2779,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@38 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 39
@@ -2792,12 +2792,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@39 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 40
@@ -2805,12 +2805,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@40 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 41
@@ -2818,12 +2818,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@41 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 42
@@ -2831,12 +2831,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@42 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 43
@@ -2844,12 +2844,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@43 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 44
@@ -2857,12 +2857,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@44 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 45
@@ -2870,12 +2870,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@45 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 46
@@ -2883,12 +2883,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@46 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 47
@@ -2896,12 +2896,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@47 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 48
@@ -2909,12 +2909,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@48 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 49
@@ -2922,12 +2922,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@49 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 50
@@ -2935,12 +2935,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@50 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 51
@@ -2948,12 +2948,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@51 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 52
@@ -2961,12 +2961,12 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@52 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
         // 53
@@ -2974,16 +2974,16 @@ describe("MasterChefV3", function () {
 
         await time.increase(1);
 
-        cakeUser1 = (await this.cakeToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingCake(1));
-        cakeUser2 = (await this.cakeToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingCake(2));
+        kfcUser1 = (await this.kfcToken.balanceOf(user1.address)).add(await this.masterChefV3.pendingKFC(1));
+        kfcUser2 = (await this.kfcToken.balanceOf(user2.address)).add(await this.masterChefV3.pendingKFC(2));
 
         console.log("@53 ----------------------------------------");
-        console.log(`user1: ${ethers.utils.formatUnits(cakeUser1)}`);
-        console.log(`user2: ${ethers.utils.formatUnits(cakeUser2)}`);
+        console.log(`user1: ${ethers.utils.formatUnits(kfcUser1)}`);
+        console.log(`user2: ${ethers.utils.formatUnits(kfcUser2)}`);
         console.log("");
 
-        assert(cakeUser1.sub(ethers.utils.parseUnits("73.99948783")).abs().lte(ethers.utils.parseUnits("0.0000001")));
-        assert(cakeUser2.sub(ethers.utils.parseUnits("122.0005122")).abs().lte(ethers.utils.parseUnits("0.0000001")));
+        assert(kfcUser1.sub(ethers.utils.parseUnits("73.99948783")).abs().lte(ethers.utils.parseUnits("0.0000001")));
+        assert(kfcUser2.sub(ethers.utils.parseUnits("122.0005122")).abs().lte(ethers.utils.parseUnits("0.0000001")));
       });
     });
   });

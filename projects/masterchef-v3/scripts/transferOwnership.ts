@@ -10,7 +10,7 @@ const abi = [
     inputs: [
       {
         internalType: "contract IERC20",
-        name: "_CAKE",
+        name: "_KFC",
         type: "address",
       },
       {
@@ -286,13 +286,13 @@ const abi = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "cakePerSecond",
+        name: "kfcPerSecond",
         type: "uint256",
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "cakeAmount",
+        name: "kfcAmount",
         type: "uint256",
       },
     ],
@@ -430,7 +430,7 @@ const abi = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "remainingCake",
+        name: "remainingKFC",
         type: "uint256",
       },
     ],
@@ -483,7 +483,7 @@ const abi = [
   },
   {
     inputs: [],
-    name: "CAKE",
+    name: "KFC",
     outputs: [
       {
         internalType: "contract IERC20",
@@ -762,7 +762,7 @@ const abi = [
     outputs: [
       {
         internalType: "uint256",
-        name: "cakePerSecond",
+        name: "kfcPerSecond",
         type: "uint256",
       },
       {
@@ -786,7 +786,7 @@ const abi = [
     outputs: [
       {
         internalType: "uint256",
-        name: "cakePerSecond",
+        name: "kfcPerSecond",
         type: "uint256",
       },
       {
@@ -879,7 +879,7 @@ const abi = [
   },
   {
     inputs: [],
-    name: "latestPeriodCakePerSecond",
+    name: "latestPeriodKFCPerSecond",
     outputs: [
       {
         internalType: "uint256",
@@ -1029,7 +1029,7 @@ const abi = [
         type: "uint256",
       },
     ],
-    name: "pendingCake",
+    name: "pendingKFC",
     outputs: [
       {
         internalType: "uint256",

@@ -73,63 +73,63 @@ async function main() {
   // await tryVerify(swapRouter, [kaspaV3PoolDeployer_address, KaspaV3Factory_address, config.WNATIVE])
   console.log('swapRouter', swapRouter.address)
 
-  // const NFTDescriptor = new ContractFactory(artifacts.NFTDescriptor.abi, artifacts.NFTDescriptor.bytecode, owner)
-  // const nftDescriptor = await NFTDescriptor.deploy()
+  const NFTDescriptor = new ContractFactory(artifacts.NFTDescriptor.abi, artifacts.NFTDescriptor.bytecode, owner)
+  const nftDescriptor = await NFTDescriptor.deploy()
   // await tryVerify(nftDescriptor)
-  // console.log('nftDescriptor', nftDescriptor.address)
+  console.log('nftDescriptor', nftDescriptor.address)
 
-  // const NFTDescriptorEx = new ContractFactory(artifacts.NFTDescriptorEx.abi, artifacts.NFTDescriptorEx.bytecode, owner)
-  // const nftDescriptorEx = await NFTDescriptorEx.deploy()
+  const NFTDescriptorEx = new ContractFactory(artifacts.NFTDescriptorEx.abi, artifacts.NFTDescriptorEx.bytecode, owner)
+  const nftDescriptorEx = await NFTDescriptorEx.deploy()
   // await tryVerify(nftDescriptorEx)
-  // console.log('nftDescriptorEx', nftDescriptorEx.address)
+  console.log('nftDescriptorEx', nftDescriptorEx.address)
 
-  // const linkedBytecode = linkLibraries(
-  //   {
-  //     bytecode: artifacts.NonfungibleTokenPositionDescriptor.bytecode,
-  //     linkReferences: {
-  //       'NFTDescriptor.sol': {
-  //         NFTDescriptor: [
-  //           {
-  //             length: 20,
-  //             start: 1261,
-  //           },
-  //         ],
-  //       },
-  //     },
-  //   },
-  //   {
-  //     NFTDescriptor: nftDescriptor.address,
-  //   }
-  // )
+  const linkedBytecode = linkLibraries(
+    {
+      bytecode: artifacts.NonfungibleTokenPositionDescriptor.bytecode,
+      linkReferences: {
+        'NFTDescriptor.sol': {
+          NFTDescriptor: [
+            {
+              length: 20,
+              start: 1261,
+            },
+          ],
+        },
+      },
+    },
+    {
+      NFTDescriptor: nftDescriptor.address,
+    }
+  )
 
-  // const NonfungibleTokenPositionDescriptor = new ContractFactory(
-  //   artifacts.NonfungibleTokenPositionDescriptor.abi,
-  //   linkedBytecode,
-  //   owner
-  // )
-  // const nonfungibleTokenPositionDescriptor = await NonfungibleTokenPositionDescriptor.deploy(
-  //   config.WNATIVE,
-  //   asciiStringToBytes32(config.nativeCurrencyLabel),
-  //   nftDescriptorEx.address
-  // )
+  const NonfungibleTokenPositionDescriptor = new ContractFactory(
+    artifacts.NonfungibleTokenPositionDescriptor.abi,
+    linkedBytecode,
+    owner
+  )
+  const nonfungibleTokenPositionDescriptor = await NonfungibleTokenPositionDescriptor.deploy(
+    config.WNATIVE,
+    asciiStringToBytes32(config.nativeCurrencyLabel),
+    nftDescriptorEx.address
+  )
 
   // await tryVerify(nonfungibleTokenPositionDescriptor, [
   //   config.WNATIVE,
   //   asciiStringToBytes32(config.nativeCurrencyLabel),
   //   nftDescriptorEx.address,
   // ])
-  // console.log('nonfungibleTokenPositionDescriptor', nonfungibleTokenPositionDescriptor.address)
+  console.log('nonfungibleTokenPositionDescriptor', nonfungibleTokenPositionDescriptor.address)
 
   // off chain version
-  const NonfungibleTokenPositionDescriptor = new ContractFactory(
-    artifacts.NonfungibleTokenPositionDescriptorOffChain.abi,
-    artifacts.NonfungibleTokenPositionDescriptorOffChain.bytecode,
-    owner
-  )
+  // const NonfungibleTokenPositionDescriptor = new ContractFactory(
+  //   artifacts.NonfungibleTokenPositionDescriptorOffChain.abi,
+  //   artifacts.NonfungibleTokenPositionDescriptorOffChain.bytecode,
+  //   owner
+  // )
   const baseTokenUri = 'https://nft.kaspafinance.com/v3/'
-  const nonfungibleTokenPositionDescriptor = await upgrades.deployProxy(NonfungibleTokenPositionDescriptor, [
-    baseTokenUri,
-  ])
+  // const nonfungibleTokenPositionDescriptor = await upgrades.deployProxy(NonfungibleTokenPositionDescriptor, [
+  //   baseTokenUri,
+  // ])
   await nonfungibleTokenPositionDescriptor.deployed()
   console.log('nonfungibleTokenPositionDescriptor', nonfungibleTokenPositionDescriptor.address)
 
@@ -161,19 +161,19 @@ async function main() {
     owner
   )
 
-  const pancakeInterfaceMulticall = await KaspaInterfaceMulticall.deploy()
-  console.log('KaspaInterfaceMulticall', pancakeInterfaceMulticall.address)
+  const kaspaInterfaceMulticall = await KaspaInterfaceMulticall.deploy()
+  console.log('KaspaInterfaceMulticall', kaspaInterfaceMulticall.address)
 
-  // await tryVerify(pancakeInterfaceMulticall)
+  // await tryVerify(kaspaInterfaceMulticall)
 
-  const V3Migrator = new ContractFactory(artifacts.V3Migrator.abi, artifacts.V3Migrator.bytecode, owner)
-  const v3Migrator = await V3Migrator.deploy(
-    kaspaV3PoolDeployer_address,
-    KaspaV3Factory_address,
-    config.WNATIVE,
-    nonfungiblePositionManager.address
-  )
-  console.log('V3Migrator', v3Migrator.address)
+  // const V3Migrator = new ContractFactory(artifacts.V3Migrator.abi, artifacts.V3Migrator.bytecode, owner)
+  // const v3Migrator = await V3Migrator.deploy(
+  //   kaspaV3PoolDeployer_address,
+  //   KaspaV3Factory_address,
+  //   config.WNATIVE,
+  //   nonfungiblePositionManager.address
+  // )
+  // console.log('V3Migrator', v3Migrator.address)
 
   // await tryVerify(v3Migrator, [
   //   kaspaV3PoolDeployer_address,
@@ -182,28 +182,28 @@ async function main() {
   //   nonfungiblePositionManager.address,
   // ])
 
-  const TickLens = new ContractFactory(artifacts.TickLens.abi, artifacts.TickLens.bytecode, owner)
-  const tickLens = await TickLens.deploy()
-  console.log('TickLens', tickLens.address)
+  // const TickLens = new ContractFactory(artifacts.TickLens.abi, artifacts.TickLens.bytecode, owner)
+  // const tickLens = await TickLens.deploy()
+  // console.log('TickLens', tickLens.address)
 
   // await tryVerify(tickLens)
 
-  const QuoterV2 = new ContractFactory(artifacts.QuoterV2.abi, artifacts.QuoterV2.bytecode, owner)
-  const quoterV2 = await QuoterV2.deploy(kaspaV3PoolDeployer_address, KaspaV3Factory_address, config.WNATIVE)
-  console.log('QuoterV2', quoterV2.address)
+  // const QuoterV2 = new ContractFactory(artifacts.QuoterV2.abi, artifacts.QuoterV2.bytecode, owner)
+  // const quoterV2 = await QuoterV2.deploy(kaspaV3PoolDeployer_address, KaspaV3Factory_address, config.WNATIVE)
+  // console.log('QuoterV2', quoterV2.address)
 
   // await tryVerify(quoterV2, [kaspaV3PoolDeployer_address, KaspaV3Factory_address, config.WNATIVE])
 
   const contracts = {
     SwapRouter: swapRouter.address,
-    V3Migrator: v3Migrator.address,
-    QuoterV2: quoterV2.address,
-    TickLens: tickLens.address,
+    // V3Migrator: v3Migrator.address,
+    // QuoterV2: quoterV2.address,
+    // TickLens: tickLens.address,
     // NFTDescriptor: nftDescriptor.address,
     // NFTDescriptorEx: nftDescriptorEx.address,
     NonfungibleTokenPositionDescriptor: nonfungibleTokenPositionDescriptor.address,
     NonfungiblePositionManager: nonfungiblePositionManager.address,
-    KaspaInterfaceMulticall: pancakeInterfaceMulticall.address,
+    KaspaInterfaceMulticall: kaspaInterfaceMulticall.address,
   }
 
   fs.writeFileSync(`./deployments/${networkName}.json`, JSON.stringify(contracts, null, 2))

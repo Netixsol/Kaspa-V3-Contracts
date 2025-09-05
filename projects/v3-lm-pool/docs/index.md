@@ -5,7 +5,7 @@
 ### getLatestPeriodInfo
 
 ```solidity
-function getLatestPeriodInfo(address _v3Pool) external view returns (uint256 cakePerSecond, uint256 endTime)
+function getLatestPeriodInfo(address _v3Pool) external view returns (uint256 kfcPerSecond, uint256 endTime)
 ```
 
 ## KaspaV3LmPool
